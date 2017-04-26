@@ -1,0 +1,274 @@
+package com.skycaster.skycaster21489.base;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.Toast;
+
+import com.skycaster.skycaster21489.abstr.AckCallBack;
+import com.skycaster.skycaster21489.utils.AdspAckDecipher;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import project.SerialPort.SerialPort;
+
+/**
+ * ADSP SDK的主要Activity类，必须继承此类方可正常运行ADSP各种功能。
+ */
+
+public abstract class AdspActivity extends AppCompatActivity {
+    protected static final String BAUD_RATE = "baud_rate";
+    protected static final String SERIAL_PORT_PATH = "serial_port_path";
+    protected static final String FREQ = "frequency";
+    protected static final String LEFT_TUNE = "left_tune";
+    protected static final String RIGHT_TUNE = "right_tune";
+    protected SerialPort mSerialPort;
+    protected int mBaudRate;
+    protected String mSerialPortPath;
+    protected int mFreq;
+    protected int mLeftTune;
+    protected int mRightTune;
+    protected SharedPreferences mSharedPreferences;
+    protected boolean isPortOpen;
+    protected InputStream mInputStream;
+    protected OutputStream mOutputStream;
+    private Snackbar mSnackbar;
+    private byte[] temp=new byte[512];
+    private AdspAckDecipher mAdspAckDecipher;
+    private AckCallBack mAckCallBack;
+
+    public int getBaudRate() {
+        return mBaudRate;
+    }
+
+    public String getSerialPortPath() {
+        return mSerialPortPath;
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(setLayoutId());
+        initView();
+        mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);
+        mSerialPortPath=mSharedPreferences.getString(SERIAL_PORT_PATH,null);
+        mBaudRate=mSharedPreferences.getInt(BAUD_RATE,19200);
+        mFreq=mSharedPreferences.getInt(FREQ,10510);
+        mLeftTune=mSharedPreferences.getInt(LEFT_TUNE,46);
+        mRightTune=mSharedPreferences.getInt(RIGHT_TUNE,60);
+        if(!TextUtils.isEmpty(mSerialPortPath)){
+            openSerialPort(mSerialPortPath,mBaudRate);
+        }
+        mAdspAckDecipher = AdspAckDecipher.getInstance();
+        initData();
+        mAckCallBack = setSerialPortAckCallBack();
+        initListeners();
+    }
+
+    /**
+     * 设置对应ADSP各种应答的回调，可根据实际情况覆写AckCallBack类里面的回调函数。
+     * @return 一个整合了各种应答回调的AckCallBack对象，不能为空值。
+     */
+    @NonNull
+    protected abstract AckCallBack setSerialPortAckCallBack();
+
+    /**
+     * 设置Activity的布局源文件。
+     * @return Activity的布局源文件，如“R.layout.activity_main”。
+     */
+    protected abstract int setLayoutId();
+
+    /**
+     * 设置好布局源文件后，在这里声明各种UI控件。
+     * 注意：此方法在setLayoutId()之后。
+     */
+    protected abstract void initView();
+
+    /**
+     * 声明好各种UI控件后，在这里初始化一些初始数据，并可对UI控件的状态进行初始化。
+     * 注意：此方法在initView()之后。
+     */
+    protected abstract void initData();
+
+    /**
+     * 完成数据初始化后，最后可以在这里设置各种回调。
+     * 注意：此方法在initData()之后。
+     */
+    protected abstract void initListeners();
+
+    /**
+     * 以串口路径、波特率为参数，尝试打开指定的串口，并初始化串口通信。
+     * @param serialPortPath 串口路径
+     * @param baudRate 波特率
+     * @return 返回true则表示成功打开，false为失败。
+     */
+    public boolean openSerialPort(String serialPortPath,int baudRate) {
+        closeSerialPort();
+        updateBaudRate(baudRate);
+        updateSerialPortPath(serialPortPath);
+        try {
+            mSerialPort=new SerialPort(new File(serialPortPath),baudRate,0);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            showSnackBar("串口设置失败,串口路径："+mSerialPortPath+" ,波特率："+mBaudRate+",原因："+e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            showSnackBar("串口设置失败,串口路径："+mSerialPortPath+" ,波特率："+mBaudRate+",原因："+e.getMessage());
+        }
+        if(mSerialPort!=null&&mSerialPort.getOutputStream()!=null&&mSerialPort.getInputStream()!=null){
+            mInputStream=mSerialPort.getInputStream();
+            mOutputStream=mSerialPort.getOutputStream();
+            isPortOpen=true;
+            startListeningInputStream();
+        }
+        return isPortOpen;
+    }
+
+    private void updateSerialPortPath(String newPath){
+        mSerialPortPath=newPath;
+        mSharedPreferences.edit().putString(SERIAL_PORT_PATH,mSerialPortPath).apply();
+
+    }
+
+    private void updateBaudRate(int baudRate){
+        mBaudRate=baudRate;
+        mSharedPreferences.edit().putInt(BAUD_RATE,mBaudRate).apply();
+    }
+
+    public void updateFreq(int newFreq){
+        mFreq=newFreq;
+        mSharedPreferences.edit().putInt(FREQ,mFreq).apply();
+    }
+
+    public void updateLeftTune(int newLeftTune){
+        mLeftTune=newLeftTune;
+        mSharedPreferences.edit().putInt(LEFT_TUNE,newLeftTune).apply();
+    }
+
+    public void updateRightTune(int newRightTune){
+        mRightTune=newRightTune;
+        mSharedPreferences.edit().putInt(RIGHT_TUNE,newRightTune).apply();
+    }
+
+    public int getFreq() {
+        return mFreq;
+    }
+
+    public int getLeftTune() {
+        return mLeftTune;
+    }
+
+    public int getRightTune() {
+        return mRightTune;
+    }
+
+    private synchronized void startListeningInputStream() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isPortOpen){
+                    try {
+                        final int len = mInputStream.read(temp);
+                        onReceivePortData(temp.clone(),len);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showSnackBar("串口设置成功,当前串口："+mSerialPortPath+" ,波特率："+mBaudRate+"。");
+            }
+        });
+    }
+
+    public void onReceivePortData(byte[] buffer, int len){
+        mAdspAckDecipher.onReceiveDate(buffer,len, mAckCallBack);
+    }
+
+    public synchronized void sendRequest(byte[] request, int start, int len){
+        if(mOutputStream!=null){
+            try {
+                mOutputStream.write(request,start,len);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 给通知栏设置一个挂靠的View，如果直接返回null，则以Toast的形式返回各种通知。
+     * @return 挂靠的View。
+     */
+    @Nullable
+    protected abstract View setSnackBarAnchorView();
+
+    protected void closeSerialPort() {
+        isPortOpen=false;
+        if(mInputStream!=null){
+            try {
+                mInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mInputStream=null;
+        }
+        if(mOutputStream!=null){
+            try {
+                mOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mOutputStream=null;
+        }
+        if(mSerialPort!=null){
+            mSerialPort.close();
+            mSerialPort=null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        closeSerialPort();
+    }
+
+    public void showSnackBar(String msg){
+        View anchorView = setSnackBarAnchorView();
+        if(anchorView !=null){
+            mSnackbar = Snackbar.make(anchorView, msg, Snackbar.LENGTH_INDEFINITE);
+            mSnackbar.setAction("确定", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mSnackbar.dismiss();
+                }
+            });
+            mSnackbar.show();
+        }else {
+            Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public InputStream getInputStream() {
+        return mInputStream;
+    }
+
+    public OutputStream getOutputStream() {
+        return mOutputStream;
+    }
+
+    public boolean isPortOpen() {
+        return isPortOpen;
+    }
+}

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackGround">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试发送命令"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:gravity="center"
+        android:padding="@dimen/padding_button_text_large"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_test_connection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1、测试连接"/>
+
+            <Button
+                android:id="@+id/btn_hibernate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2、开启休眠"/>
+
+            <Button
+                android:id="@+id/btn_start_adsp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3、开启接收机"/>
+
+            <Button
+                android:id="@+id/btn_stop_adsp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="4、关闭接收机"/>
+
+            <Button
+                android:id="@+id/btn_check_software_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="5、查询软件版本"/>
+
+            <Button
+                android:id="@+id/btn_check_adsp_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="6、查询产品ID"/>
+
+            <Button
+                android:id="@+id/btn_get_snr_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="7、查询信噪比"/>
+
+            <Button
+                android:id="@+id/btn_check_snr_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="8、查询接收状态"/>
+
+            <Button
+                android:id="@+id/btn_get_time_offset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="9、查询时偏"/>
+
+            <Button
+                android:id="@+id/btn_get_freq_offset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="10、查询频偏"/>
+
+            <Button
+                android:id="@+id/btn_check_tuner_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="11、查询tuner状态"/>
+
+            <Button
+                android:id="@+id/btn_check_task_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="12、查询接收到有哪些业务"/>
+
+            <Button
+                android:id="@+id/btn_check_system_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="13、查询日期时间"/>
+
+            <Button
+                android:id="@+id/btn_enable_ckfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="14、设置校验失败可以输出"/>
+
+            <Button
+                android:id="@+id/btn_disable_ckfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="15、设置校验失败不可以输出"/>
+
+            <Button
+                android:id="@+id/btn_set_baud_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="16、设置波特率"/>
+
+            <Button
+                android:id="@+id/btn_set_freq"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="17、设置频点"/>
+
+            <Button
+                android:id="@+id/btn_set_tunes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="18、设置接收模式"/>
+
+            <Button
+                android:id="@+id/btn_enable_1pps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="19、设置1PPS开"/>
+
+            <Button
+                android:id="@+id/btn_disable_1pps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="20、设置1PPS关"/>
+
+            <Button
+                android:id="@+id/btn_begin_task"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="21、输出所有业务或特定业务"/>
+
+            <Button
+                android:id="@+id/btn_prepare_upgrade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="22、启动升级"/>
+
+            <Button
+                android:id="@+id/btn_send_upgrade_packet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="23、传输升级数据"/>
+
+            //新增功能
+            <Button
+                android:id="@+id/btn_check_ckfo_config"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="24、查询设置校验失败是否输出"/>
+
+            <Button
+                android:id="@+id/btn_check_freq"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="25、查询当前频点"/>
+
+            <Button
+                android:id="@+id/btn_check_tunes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="26、查询当前左频及右频"/>
+
+            <Button
+                android:id="@+id/btn_check_1pps_config"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="27、查询1PPS设置状态"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

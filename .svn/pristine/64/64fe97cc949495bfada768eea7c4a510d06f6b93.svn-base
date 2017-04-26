@@ -1,0 +1,280 @@
+package com.skycaster.skycaster21489.utils;
+
+import com.skycaster.skycaster21489.abstr.AckCallBack;
+
+/**
+ * Created by 廖华凯 on 2017/3/28.
+ */
+
+public class AdspAckDecipher {
+    private static final AdspAckDecipher ADSP_ACK_DECIFER=new AdspAckDecipher();
+    private byte[] temp=new byte[256];
+    private int index=0;
+    private boolean isAckConfirmed;
+    private AdspAckDecipher() {
+    }
+    public static AdspAckDecipher getInstance(){
+        return ADSP_ACK_DECIFER;
+    }
+
+
+    public void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
+        for(int i=0;i<len;i++){
+//            showLog("------receive byte:"+String.valueOf((char)buffer[i]));
+//            showLog("------receive byte in int form:"+Integer.valueOf(buffer[i]));
+            if(!isAckConfirmed){
+                if(buffer[i]=='+'){
+                    isAckConfirmed=true;
+                    index=0;
+//                    showLog("------ack confirmed");
+                }
+            }else {
+//                showLog("current byte in int form:"+buffer[i]);
+                if(buffer[i]=='\r'||buffer[i]=='\n'){
+//                    showLog("------begin to decipher");
+                    decipher(temp,index, ackCallBack);
+                    isAckConfirmed=false;
+                }else {
+//                    showLog("------filling buffer");
+                    temp[index]=buffer[i];
+                    if(index<255){
+                        index++;
+                    }else {
+                        ackCallBack.onError("缓存区内存溢出，缓存区下标将复位。");
+                        index=0;
+                    }
+                }
+            }
+        }
+    }
+
+    private void decipher(byte[] buffer, int len,AckCallBack ackCallBack){
+        StringBuffer sb=new StringBuffer();
+        String[] acks = new String(buffer,0,len).split(":");
+        if(acks.length<2){
+            String temp=acks[0];
+            acks=new String[]{temp,"NULL"};
+        }
+        switch (acks[0]){
+            case "OK":
+                sb.append("接收模块正常运行,通信链路正常。");
+                ackCallBack.connect(true,sb.toString());
+                break;
+            case "HBNT=OK":
+                sb.append("接收模块进入休眠状态：成功。");
+                ackCallBack.hibernate(true,sb.toString());
+                break;
+            case "HBNT=ERROR":
+                sb.append("接收模块进入休眠状态：失败；原因：");
+                switch (acks[1]){
+                    case "1":
+                        sb.append("设备忙。");
+                        break;
+                    case "2":
+                        sb.append("不支持的命令。");
+                        break;
+                    default:
+                        sb.append("未知原因。");
+                        break;
+                }
+                ackCallBack.hibernate(false,sb.toString());
+                break;
+            case "RECVOP=OK":
+                switch (acks[1]){
+                    case "OPEN":
+                        sb.append("启动接收机：成功。");
+                        ackCallBack.startReceiveData(true,sb.toString());
+                        break;
+                    case "CLOSE":
+                        sb.append("关闭接收机：成功。");
+                        ackCallBack.stopReceivingData(true,sb.toString());
+                        break;
+                    default:
+                        sb.append("接收机启动/关闭返回参数错误,潜在原因：数据丢失。");
+                        ackCallBack.onError(sb.toString());
+                        break;
+                }
+                break;
+            case "RECVOP=ERROR":
+                switch (acks[1]){
+                    case "OPEN":
+                        sb.append("启动接收机：失败。");
+                        ackCallBack.startReceiveData(false,sb.toString());
+                        break;
+                    case "CLOSE":
+                        sb.append("关闭接收机：失败。");
+                        ackCallBack.stopReceivingData(false,sb.toString());
+                        break;
+                    default:
+                        sb.append("接收机启动/关闭返回参数错误,潜在原因：数据丢失。");
+                        ackCallBack.onError(sb.toString());
+                        break;
+                }
+                break;
+            case "SVER":
+//                sb.append("当前接收机软件版本为：").append(acks[1]);
+                ackCallBack.getSoftwareVersion(true,acks[1]);
+                break;
+            case "ID":
+//                sb.append("当前接收机ID：").append(acks[1]);
+                ackCallBack.getDeviceId(true,acks[1]);
+                break;
+            case "SNR":
+//                sb.append("当前接收机信噪比为：").append(acks[1]);
+                ackCallBack.getSNRRate(true,acks[1]);
+                break;
+            case "STAT":
+//                sb.append("当前接收状态为：").append(acks[1]);
+                ackCallBack.getSNRStatus(true,acks[1]);
+                break;
+            case "SFO":
+//                sb.append("当前时偏为：").append(acks[1]);
+                ackCallBack.getSFO(true,acks[1]);
+                break;
+            case "CFO":
+//                sb.append("当前频偏为：").append(acks[1]);
+                ackCallBack.getCFO(true,acks[1]);
+                break;
+            case "TUNER":
+                sb.append("当前Tuner状态为：");
+                switch (acks[1]){
+                    case "0":
+                        sb.append("正常。");
+                        ackCallBack.getTunerStatus(true,sb.toString());
+                        break;
+                    case "1":
+                        sb.append("设置失败。");
+                        ackCallBack.getTunerStatus(false,sb.toString());
+                        break;
+                    case "2":
+                        sb.append("无数据输入。");
+                        ackCallBack.getTunerStatus(false,sb.toString());
+                        break;
+                    default:
+                        sb.append("参数有误，无法解析。");
+                        ackCallBack.getTunerStatus(false,sb.toString());
+                        break;
+                }
+                break;
+            case "QSRV":
+                //协议待定
+                sb.append("当前任务清单：");
+                break;
+            case "TIME":
+                String[] strings = acks[1].split(",");
+                try {
+                    sb.append(strings[0])
+                            .append("年")
+                            .append(strings[1])
+                            .append("月")
+                            .append(strings[2])
+                            .append("日")
+                            .append(strings[3])
+                            .append("时")
+                            .append(strings[4])
+                            .append("分")
+                            .append(strings[5])
+                            .append("秒");
+                    ackCallBack.getDate(true,sb.toString());
+                }catch (IndexOutOfBoundsException e){
+                    sb.append("日期格式有误，解析失败");
+                    ackCallBack.getDate(false,sb.toString());
+                }
+                break;
+            case "CKFO=OK":
+                switch (acks[1]){
+                    case "ENABLE":
+                        sb.append("设置校验失败继续输出：成功");
+                        break;
+                    case "DISABLE":
+                        sb.append("设置校验失败则停止输出：成功");
+                        break;
+                    default:
+                        sb.append("设置校验失败返回参数有误，无法解析。");
+                        break;
+                }
+                ackCallBack.disableCKFO(true,sb.toString());
+                break;
+            case "CKFO=ERROR":
+                switch (acks[1]){
+                    case "ENABLE":
+                        sb.append("设置校验失继续输出：失败。");
+                        break;
+                    case "DISABLE":
+                        sb.append("设置校验失败停止输出：失败。");
+                        break;
+                    default:
+                        sb.append("设置校验失败返回参数有误，无法解析。");
+                        break;
+                }
+                ackCallBack.disableCKFO(false,sb.toString());
+                break;
+            case "BDRT=OK":
+                sb.append("设置波特率:成功。");
+                ackCallBack.setBaudRate(true,sb.toString());
+                break;
+            case "BDRT=ERROR":
+                sb.append("设置波特率:失败。");
+                ackCallBack.setBaudRate(false,sb.toString());
+                break;
+            case "FREQ=OK":
+                sb.append("设置频点:成功。");
+                ackCallBack.setFreq(true,sb.toString());
+                break;
+            case "FREQ=ERROR":
+                sb.append("设置频点:失败。");
+                ackCallBack.setFreq(false,sb.toString());
+                break;
+            case "RMODE=OK":
+                sb.append("设置接收模式:成功。");
+                ackCallBack.setTuners(true,sb.toString());
+                break;
+            case "RMODE=ERROR":
+                sb.append("设置接收模式:失败。");
+                ackCallBack.setTuners(false,sb.toString());
+                break;
+            case "1PPS=OK":
+                switch (acks[1]){
+                    case "OPEN":
+                        sb.append("启动1PPS：成功");
+                        break;
+                    case "CLOSE":
+                        sb.append("关闭1PPS：成功");
+                        break;
+                    default:
+                        sb.append("操纵1PPS返回参数有误，无法解析。");
+                        break;
+                }
+                ackCallBack.disable1PPS(true,sb.toString());
+                break;
+            case "1PPS=ERROR":
+                switch (acks[1]){
+                    case "OPEN":
+                        sb.append("启动1PPS：失败");
+                        break;
+                    case "CLOSE":
+                        sb.append("关闭1PPS：失败");
+                        break;
+                    default:
+                        ackCallBack.onError(sb.toString());
+                        break;
+                }
+                ackCallBack.enable1PPS(false,sb.toString());
+                break;
+            case "STUD=OK":
+                sb.append("准备升级：成功。");
+                ackCallBack.prepareUpgrade(true,sb.toString());
+                break;
+            case "STUD=ERROR":
+                sb.append("准备升级：失败。");
+                ackCallBack.prepareUpgrade(false,sb.toString());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void showLog(String msg){
+        LogUtils.showLog(msg);
+    }
+}

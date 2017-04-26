@@ -1,0 +1,620 @@
+package com.skycaster.adsp21489.activity;
+
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.skycaster.adsp21489.R;
+import com.skycaster.adsp21489.base.BaseActivity;
+import com.skycaster.adsp21489.base.BaseApplication;
+import com.skycaster.adsp21489.util.AlertDialogUtil;
+import com.skycaster.skycaster21489.abstr.AckCallBack;
+import com.skycaster.skycaster21489.utils.AdspRequestManager;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Random;
+
+public class MainActivity extends BaseActivity {
+    private ListView mConsole;
+    private ActionBar mActionBar;
+    private ArrayList<String > mConsoleContents=new ArrayList<>();
+    private ArrayAdapter<String> mConsoleAdapter;
+    private AdspRequestManager mRequestManager;
+    private Random mRandom=new Random();
+
+
+    @NonNull
+    @Override
+    protected AckCallBack setSerialPortAckCallBack() {
+        return new AckCallBack() {
+            @Override
+            public void onError(final String msg) {
+                updateConsole(msg);
+            }
+
+            @Override
+            public void checkConnectionStatus(boolean isSuccess, String info) {
+                super.checkConnectionStatus(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void hibernate(boolean isSuccess, String info) {
+                super.hibernate(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void startReceivingData(boolean isSuccess, String info) {
+                super.startReceivingData(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void stopReceivingData(boolean isSuccess, String info) {
+                super.stopReceivingData(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkSoftwareVersion(boolean isSuccess, String info) {
+                super.checkSoftwareVersion(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkDeviceId(boolean isSuccess, String info) {
+                super.checkDeviceId(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkSnrRate(boolean isSuccess, String info) {
+                super.checkSnrRate(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkSnrStatus(boolean isSuccess, String info) {
+                super.checkSnrStatus(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkSfo(boolean isSuccess, String info) {
+                super.checkSfo(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkCfo(boolean isSuccess, String info) {
+                super.checkCfo(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkTunerStatus(boolean isSuccess, String info) {
+                super.checkTunerStatus(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkDate(boolean isSuccess, String info) {
+                super.checkDate(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void enableCKFO(boolean isSuccess, String info) {
+                super.enableCKFO(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void disableCKFO(boolean isSuccess, String info) {
+                super.disableCKFO(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void setBaudRate(boolean isSuccess, String info) {
+                super.setBaudRate(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void setFreq(boolean isSuccess, String info) {
+                super.setFreq(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void setTuners(boolean isSuccess, String info) {
+                super.setTuners(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void enable1PPS(boolean isSuccess, String info) {
+                super.enable1PPS(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void disable1PPS(boolean isSuccess, String info) {
+                super.disable1PPS(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void prepareUpgrade(boolean isSuccess, String info) {
+                super.prepareUpgrade(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
+                super.onReceiveUpgradePackage(isSuccess, packageIndex);
+                if(isSuccess){
+                    updateConsole("数据包接收成功，当前包号为"+ packageIndex);
+                }else {
+                    updateConsole("数据包接收失败，当前包号为"+ packageIndex);
+                }
+
+            }
+
+            //*****************************新增应答***************************************
+
+
+            @Override
+            public void checkCkfoSetting(boolean isEnable, String info) {
+                super.checkCkfoSetting(isEnable, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkFreq(boolean isSuccess, String info) {
+                super.checkFreq(isSuccess, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkTunes(boolean isSuccess, String leftTune, String rightTune) {
+                super.checkTunes(isSuccess, leftTune, rightTune);
+                updateConsole("左频:"+leftTune+" 右频："+rightTune);
+            }
+
+            @Override
+            public void check1PpsConfig(boolean isEnable, String info) {
+                super.check1PpsConfig(isEnable, info);
+                updateConsole(info);
+            }
+        };
+    }
+
+    @NonNull
+    @Override
+    protected String setDefaultSerialPortPath() {
+        return "/dev/ttyAMA0";
+    }
+
+    @NonNull
+    @Override
+    protected int setDefaultBaudRate() {
+        return 19200;
+    }
+
+    @Override
+    protected int setLayoutId() {
+        return R.layout.activity_main;
+    }
+
+    @Override
+    protected void initView() {
+        mConsole= (ListView) findViewById(R.id.main_console);
+
+    }
+
+    @Override
+    protected void initData() {
+        mActionBar = getSupportActionBar();
+        if(mActionBar!=null){
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+            try {
+                PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_CONFIGURATIONS);
+                mActionBar.setSubtitle("当前版本："+packageInfo.versionName);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        mConsoleAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,mConsoleContents){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                TextView textView = (TextView) super.getView(position, convertView, parent);
+                textView.setGravity(Gravity.CENTER);
+                return textView;
+            }
+        };
+        mConsole.setAdapter(mConsoleAdapter);
+        mRequestManager = getRequestManager();
+
+    }
+
+    @Override
+    protected void initListeners() {
+        //---------------------------------------------------------------------测试发送-----------------------------------------------------------------//
+        //测试连接
+        onClick(R.id.btn_test_connection, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkConnectionStatus();
+            }
+        });
+        //休眠
+        onClick(R.id.btn_hibernate, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.hibernate();
+            }
+        });
+        //接收机开
+        onClick(R.id.btn_start_adsp, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.toggleReceivingData(true);
+            }
+        });
+        //接收机关
+        onClick(R.id.btn_stop_adsp, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.toggleReceivingData(false);
+            }
+        });
+        //查询软件版本
+        onClick(R.id.btn_check_software_version, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkSoftwareVersion();
+            }
+        });
+        //查询产品id
+        onClick(R.id.btn_check_adsp_id, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkDeviceId();
+            }
+        });
+        //查询信噪比
+        onClick(R.id.btn_get_snr_rate, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkSnrRate();
+            }
+        });
+        //查询系统状态
+        onClick(R.id.btn_check_snr_status, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkSnrStatus();
+            }
+        });
+        //查询时偏
+        onClick(R.id.btn_get_time_offset, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkSfo();
+            }
+        });
+        //查询频偏
+        onClick(R.id.btn_get_freq_offset, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkCfo();
+            }
+        });
+        //查询tuner状态
+        onClick(R.id.btn_check_tuner_status, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkTunerStatus();
+            }
+        });
+        //接收到有哪些业务
+        onClick(R.id.btn_check_task_list, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkTaskList();
+            }
+        });
+        //查询日期
+        onClick(R.id.btn_check_system_date, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkDate();
+            }
+        });
+        //设置校验失败后仍然输出
+        onClick(R.id.btn_enable_ckfo, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.enableCKFO(true);
+            }
+        });
+        //设置校验失败后不输出
+        onClick(R.id.btn_disable_ckfo, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.enableCKFO(false);
+            }
+        });
+        //设置波特率
+        onClick(R.id.btn_set_baud_rate, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSetBaudRateDialog(MainActivity.this);
+            }
+        });
+        //设置频率
+        onClick(R.id.btn_set_freq, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSetFreqDialog(MainActivity.this);
+            }
+        });
+        //设置接收模式
+        onClick(R.id.btn_set_tunes, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSetTunesDialog(MainActivity.this);
+            }
+        });
+        //启动1pps
+        onClick(R.id.btn_enable_1pps, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.toggle1Pps(true);
+            }
+        });
+        //关闭1pps
+        onClick(R.id.btn_disable_1pps, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.toggle1Pps(false);
+            }
+        });
+
+        //启动升级
+        onClick(R.id.btn_prepare_upgrade, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSdCardBrowsingView(MainActivity.this, new AlertDialogUtil.UpgradeFileSelectedListener() {
+                    @Override
+                    public void onUpgradeFileSelected(File upgradeFile) {
+                        mRequestManager.prepareUpgrade(MainActivity.this,upgradeFile);
+                    }
+                });
+            }
+        });
+
+        //***************************************新命令******************************************
+
+        //查询设置校验失败是否输出
+        onClick(R.id.btn_check_ckfo_config, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkCkfoSetting();
+            }
+        });
+
+        //查询当前设备频点
+        onClick(R.id.btn_check_freq, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkFreq();
+            }
+        });
+
+        //查询左频及右频
+        onClick(R.id.btn_check_tunes, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkTunes();
+            }
+        });
+
+        //查询当前1pps是否开启
+        onClick(R.id.btn_check_1pps_config, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.check1PpsConfig();
+            }
+        });
+
+        //---------------------------------------------------------------------模拟接收-------------------------------------------------------------------//
+        //测试连接成功
+        clickToSendAck(R.id.ack_btn_connect_ok, "+OK\r\n");
+        //测试休眠成功
+        clickToSendAck(R.id.ack_btn_hibernate_ok, "+HBNT=OK\r\n");
+        //测试休眠失败
+        clickToSendAck(R.id.ack_btn_hibernate_error, "+HBNT=ERROR:1\r\n");
+        //测试接收机开启成功
+        clickToSendAck(R.id.ack_btn_adsp_start_ok,"+RECVOP=OK:OPEN\r\n");
+        //测试接收机关闭成功
+        clickToSendAck(R.id.ack_btn_adsp_stop_ok,"+RECVOP=OK:CLOSE\r\n");
+        //测试接收机开启失败
+        clickToSendAck(R.id.ack_btn_adsp_start_error,"+RECVOP=ERROR:OPEN\r\n");
+        //测试接收机关闭失败
+        clickToSendAck(R.id.ack_btn_adsp_stop_error,"+RECVOP=ERROR:CLOSE\r\n");
+        //测试获取软件版本
+        clickToSendAck(R.id.ack_btn_software_version,"+SVER:ver1.0\r\n");
+        //测试获取产品id
+        clickToSendAck(R.id.ack_btn_product_id,"+ID:3.1415926\r\n");
+        //查询当前信噪比
+        clickToSendAck(R.id.ack_btn_snr_rate,"+SNR:27.50\r\n");
+        //查询当前接收状态
+        clickToSendAck(R.id.ack_btn_snr_status,"+STAT:Frame detecting\r\n");
+        //查询时偏
+        clickToSendAck(R.id.ack_btn_time_offset,"+SFO:28.00\r\n");
+        //查询频偏
+        clickToSendAck(R.id.ack_btn_freq_offset,"+CFO:64.05\r\n");
+        //查询tuner状态
+        onClick(R.id.ack_btn_tuner_status, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ack="+TUNER:"+mRandom.nextInt(4)+"\r\n";
+                sendAck(ack);
+
+            }
+        });
+        //查询接收到有哪些任务-----------待仪
+        //查询日期
+        onClick(R.id.ack_btn_date, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Date date=new Date(SystemClock.currentThreadTimeMillis());
+                StringBuffer sb=new StringBuffer();
+                sb.append("+TIME:")
+                        .append(date.getYear()+1900)
+                        .append(",")
+                        .append(date.getMonth())
+                        .append(",")
+                        .append(date.getDay())
+                        .append(",")
+                        .append(date.getHours())
+                        .append(",")
+                        .append(date.getMinutes())
+                        .append(",")
+                        .append(date.getSeconds())
+                        .append("\r\n");
+                sendAck(sb.toString());
+            }
+        });
+        //设置校验失败是否输出
+        clickToSendAck(R.id.ack_btn_ckfo_enable_ok,"+CKFO=OK:ENABLE\r\n");
+        clickToSendAck(R.id.ack_btn_ckfo_disable_ok,"+CKFO=OK:DISABLE\r\n");
+        clickToSendAck(R.id.ack_btn_ckfo_enable_error,"+CKFO=ERROR:ENABLE\r\n");
+        clickToSendAck(R.id.ack_btn_ckfo_disable_error,"+CKFO=ERROR:DISABLE\r\n");
+        //设置波特率
+        clickToSendAck(R.id.ack_btn_set_baud_rate_ok,"+BDRT=OK\r\n");
+        clickToSendAck(R.id.ack_btn_set_baud_rate_error,"+BDRT=ERROR\r\n");
+        //设置频点
+        clickToSendAck(R.id.ack_btn_set_freq_ok,"+FREQ=OK\r\n");
+        clickToSendAck(R.id.ack_btn_set_freq_error,"+FREQ=ERROR\r\n");
+        //设置接收模式
+        clickToSendAck(R.id.ack_btn_set_tunes_ok,"+RMODE=OK\r\n");
+        clickToSendAck(R.id.ack_btn_set_tunes_error,"+RMODE=ERROR\r\n");
+        //设置1pps开关
+        clickToSendAck(R.id.ack_btn_set_1pps_open_ok,"+1PPS=OK:OPEN\r\n");
+        clickToSendAck(R.id.ack_btn_set_1pps_close_ok,"+1PPS=OK:CLOSE\r\n");
+        clickToSendAck(R.id.ack_btn_set_1pps_open_error,"+1PPS=ERROR:OPEN\r\n");
+        clickToSendAck(R.id.ack_btn_set_1pps_close_error,"+1PPS=ERROR:CLOSE\r\n");
+        //测试输出所有业务或特定业务------待议
+        //启动升级
+        clickToSendAck(R.id.ack_btn_prepare_upgrade_ok,"+STUD=OK\r\n");
+        clickToSendAck(R.id.ack_btn_prepare_upgrade_error,"+STUD=ERROR\r\n");
+
+        //*********************************新增应答*************************************************
+        //查询验证失败是否继续输出
+        clickToSendAck(R.id.ack_btn_check_ckfo_enable_yes,"+CKFO:ENABLE\r\n");
+        clickToSendAck(R.id.ack_btn_check_ckfo_enable_no,"+CKFO:DISABLE\r\n");
+        //查询当前设备频点
+        clickToSendAck(R.id.ack_btn_check_freq,"+FREQ:9800\r\n");
+        //查询当前设备左频及右频
+        clickToSendAck(R.id.ack_btn_check_tunes,"+RMODE:60,63\r\n");
+        //查询1PPS是否开启
+        clickToSendAck(R.id.ack_btn_check_1pps_config_enable,"+1PPS:OPEN\r\n");
+        clickToSendAck(R.id.ack_btn_check_1pps_config_disable,"+1PPS:CLOSE\r\n");
+        //发送了一个成功的升级包
+        clickToSendAck(R.id.ack_btn_send_upgrade_package_ok,"+UDDA=OK:18\r\n");
+        //发送了一个失败的升级包
+        clickToSendAck(R.id.ack_btn_send_upgrade_package_error,"+UDDA=ERROR:19\r\n");
+
+    }
+
+    private void sendAck(String ack){
+        byte[] temp=ack.getBytes();
+        onReceivePortData(temp,temp.length);
+    }
+
+
+    private void clickToSendAck(int buttonId, final String ack){
+        onClick(buttonId, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendAck(ack);
+            }
+        });
+    }
+
+
+//    @Override
+//    public synchronized void sendRequest(byte[] request, int start, int len) {
+//        super.sendRequest(request, start, len);
+//        updateConsole(new String(request,start,len));
+//    }
+
+//    @Override
+//    public void onReceivePortData(final byte[] buffer, final int len) {
+//        super.onReceivePortData(buffer,len);
+//        updateConsole(new String(buffer,0,len).trim());
+//    }
+
+    private void updateConsole(final String msg) {
+        BaseApplication.post(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mConsoleContents.add(msg);
+                        mConsoleAdapter.notifyDataSetChanged();
+                        mConsole.smoothScrollToPosition(mConsoleContents.size()-1);
+                    }
+                });
+            }
+        });
+    }
+
+
+    @Override
+    protected View setSnackBarAnchorView() {
+        return mConsole;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_choose_serial_port:
+                AlertDialogUtil.showSerialPortSelection(this);
+                break;
+            case android.R.id.home:
+                confirmBackPress();
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+}

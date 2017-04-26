@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="grid_view_item_count_type_one">10</integer>
+</resources>

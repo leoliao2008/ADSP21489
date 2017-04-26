@@ -1,0 +1,187 @@
+package com.skycaster.skycaster21489.abstr;
+
+/**
+ * 对应ADSP的各种应答的回调类，可根据实际情况覆写里面各种回调函数。
+ */
+public abstract class AckCallBack {
+
+    /**
+     * 解析应答数据时，当字节排列不符合协议规范或数据长度超出上限（256 bytes）时将触发此回调。
+     * @param msg 提示信息。
+     */
+    public abstract void onError(String msg);
+
+    /**
+     * 返回当前ADSP设备的连接状况。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void connect(boolean isSuccess,String info){}
+
+    /**
+     * 返回当前ADSP是否已经成功进入休眠状态。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void hibernate(boolean isSuccess,String info) {}
+
+    /**
+     * 返回当前ADSP是否已经成功进入接收业务数据状态。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void startReceiveData(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 返回当前ADSP是否已经成功进入停止接收业务数据状态。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void stopReceivingData(boolean isSuccess, String info) {}
+
+    /**
+     * 返回当前ADSP系统版本信息。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info ADSP系统版本信息。
+     */
+    public void getSoftwareVersion(boolean isSuccess, String info) {
+    }
+
+    /**
+     * 返回当前ADSP设备ID。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info ADSP设备ID。
+     */
+    public void getDeviceId(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 返回当前ADSP业务数据的音噪率。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 当前ADSP业务数据的音噪率，音噪率范围一般在10-30之间，音噪率越高，说明信号越好。
+     */
+    public void getSNRRate(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 返回当前ADSP正处于接收业务数据的哪个阶段。ADSP开始正常接收业务数据前一般需要1-10秒的时间初始化。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void getSNRStatus(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 返回当前ADSP的时偏。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 时偏的数值，以字符串的形式表示，如“27.10”。
+     */
+    public void getSFO(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 返回当前ADSP的频偏。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 频偏的数值，以字符串的形式表示，如“27.10”。
+     */
+    public void getCFO(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 查询Tuner的状态的回调，一般用于内部调试。
+     * @param isStatusNormal  表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void getTunerStatus(boolean isStatusNormal, String info) {
+
+    }
+
+    /**
+     * 查询ADSP系统的日期的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 日期，以字符串形式表示，格式如下：“2017年04月06日10时10分10秒”。
+     */
+    public void getDate(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 设置校验失败继续输出的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void enableCKFO(boolean isSuccess, String info) {
+    }
+
+    /**
+     * 设置校验失败停止输出的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void disableCKFO(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 设置ADSP波特率的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void setBaudRate(boolean isSuccess,String info) {
+
+    }
+
+    /**
+     * 设置ADSP业务数据接收频率的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void setFreq(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 设置ADSP业务数据左频和右频的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void setTuners(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 设置1PPS开的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void enable1PPS(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 设置1PPS关的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void disable1PPS(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 请求升级ADSP系统的回调。
+     * @param isSuccess 表示请求是否被成功执行。
+     * @param info 提示信息。
+     */
+    public void prepareUpgrade(boolean isSuccess, String info) {
+
+    }
+
+
+}
