@@ -179,32 +179,12 @@ public class AdspAckDecipher {
                 }
                 break;
             case "CKFO=OK":
-                switch (acks[1]){
-                    case "ENABLE":
-                        sb.append("设置校验失败继续输出：成功");
-                        break;
-                    case "DISABLE":
-                        sb.append("设置校验失败则停止输出：成功");
-                        break;
-                    default:
-                        sb.append("设置校验失败：返回参数有误，无法解析。");
-                        break;
-                }
-                ackCallBack.disableCKFO(true,sb.toString());
+                sb.append("设置校验失败是否继续输出：操作成功");
+                ackCallBack.toggleCKFO(true,sb.toString());
                 break;
             case "CKFO=ERROR":
-                switch (acks[1]){
-                    case "ENABLE":
-                        sb.append("设置校验失继续输出：失败。");
-                        break;
-                    case "DISABLE":
-                        sb.append("设置校验失败停止输出：失败。");
-                        break;
-                    default:
-                        sb.append("设置校验失败：返回参数有误，无法解析。");
-                        break;
-                }
-                ackCallBack.disableCKFO(false,sb.toString());
+                sb.append("设置校验失败是否继续输出：操作失败。");
+                ackCallBack.toggleCKFO(false,sb.toString());
                 break;
             case "BDRT=OK":
                 sb.append("设置波特率:成功。");
@@ -231,33 +211,12 @@ public class AdspAckDecipher {
                 ackCallBack.setTuners(false,sb.toString());
                 break;
             case "1PPS=OK":
-                switch (acks[1]){
-                    case "OPEN":
-                        sb.append("启动1PPS：成功");
-                        break;
-                    case "CLOSE":
-                        sb.append("关闭1PPS：成功");
-                        break;
-                    default:
-                        sb.append("操纵1PPS：返回参数有误，无法解析。");
-                        break;
-                }
-                ackCallBack.disable1PPS(true,sb.toString());
+                sb.append("设置1PPS：操作成功");
+                ackCallBack.toggle1PPS(true,sb.toString());
                 break;
             case "1PPS=ERROR":
-                switch (acks[1]){
-                    case "OPEN":
-                        sb.append("启动1PPS：失败。");
-                        break;
-                    case "CLOSE":
-                        sb.append("关闭1PPS：失败。");
-                        break;
-                    default:
-                        sb.append("操纵1PPS：参数有误，无法解析。");
-                        ackCallBack.onError(sb.toString());
-                        break;
-                }
-                ackCallBack.enable1PPS(false,sb.toString());
+                sb.append("设置1PPS：操作失败");
+                ackCallBack.toggle1PPS(false,sb.toString());
                 break;
             case "STUD=OK":
                 sb.append("准备升级：成功，开始向设备发送数据包......");
@@ -280,15 +239,15 @@ public class AdspAckDecipher {
             case "CKFO":
                 switch (acks[1]){
                     case "ENABLE":
-                        sb.append("校验失败是否输出:是");
+                        sb.append("当前校验失败是否输出:是");
                         ackCallBack.checkCkfoSetting(true,sb.toString());
                         break;
                     case "DISABLE":
-                        sb.append("校验失败是否输出:否");
+                        sb.append("当前校验失败是否输出:否");
                         ackCallBack.checkCkfoSetting(false,sb.toString());
                         break;
                     default:
-                        sb.append("校验失败是否输出:返回参数有误，无法解析。");
+                        sb.append("当前校验失败是否输出:返回参数有误，无法解析。");
                         ackCallBack.onError(sb.toString());
                         break;
                 }

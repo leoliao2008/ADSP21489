@@ -27,7 +27,6 @@ import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.excpt.BaudRateOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
-import com.skycaster.skycaster21489.utils.AdspRequestManager;
 
 import java.io.File;
 
@@ -157,7 +156,7 @@ public class AlertDialogUtil {
                     public void onClick(DialogInterface dialog, int which) {
                         //todo：是不是应该也同时修改本机的波特率呢？
                         try {
-                            AdspRequestManager.getInstance(context).setBaudRate(Integer.valueOf(baudRateList[selectedBaudRateIndex]));
+                            context.getRequestManager().setBaudRate(Integer.valueOf(baudRateList[selectedBaudRateIndex]));
                             mAlertDialog.dismiss();
                         } catch (BaudRateOutOfRangeException e) {
                             ToastUtil.showToast(e.getMessage());
@@ -184,7 +183,7 @@ public class AlertDialogUtil {
                     ToastUtil.showToast("请输入频率。");
                 }else {
                     try {
-                        AdspRequestManager.getInstance(context).setFreq(Integer.valueOf(newFreq));
+                        context.getRequestManager().setFreq(Integer.valueOf(newFreq));
                         mAlertDialog.dismiss();
                     } catch (FreqOutOfRangeException e) {
                         ToastUtil.showToast(e.getMessage());
@@ -221,9 +220,7 @@ public class AlertDialogUtil {
                     ToastUtil.showToast("请输入左频及右频参数。");
                 }else {
                     try {
-                        AdspRequestManager
-                                .getInstance(context)
-                                .setTunes(Integer.valueOf(string_leftTune),Integer.valueOf(string_rightTune));
+                        context.getRequestManager().setTunes(Integer.valueOf(string_leftTune),Integer.valueOf(string_rightTune));
                         mAlertDialog.dismiss();
                     } catch (TunerSettingException e) {
                         ToastUtil.showToast(e.getMessage());
@@ -293,7 +290,7 @@ public class AlertDialogUtil {
 
         //show dialog
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
-        mAlertDialog=builder.setCancelable(false).create();
+        mAlertDialog=builder.setCancelable(true).create();
         mAlertDialog.show();
         //config dialog view
         mAlertDialog.setContentView(rootView);

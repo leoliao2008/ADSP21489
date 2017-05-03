@@ -157,36 +157,36 @@
                 android:layout_height="wrap_content"
                 android:text="22、启动升级"/>
 
-            <Button
-                android:id="@+id/btn_send_upgrade_packet"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="23、传输升级数据"/>
+            <!--<Button-->
+                <!--android:id="@+id/btn_send_upgrade_packet"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="23、传输升级数据"/>-->
 
             //新增功能
             <Button
                 android:id="@+id/btn_check_ckfo_config"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="24、查询设置校验失败是否输出"/>
+                android:text="23、查询设置校验失败是否输出"/>
 
             <Button
                 android:id="@+id/btn_check_freq"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="25、查询当前频点"/>
+                android:text="24、查询当前频点"/>
 
             <Button
                 android:id="@+id/btn_check_tunes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="26、查询当前左频及右频"/>
+                android:text="25、查询当前左频及右频"/>
 
             <Button
                 android:id="@+id/btn_check_1pps_config"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="27、查询1PPS设置状态"/>
+                android:text="26、查询1PPS设置状态"/>
 
         </LinearLayout>
 

@@ -118,14 +118,8 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void enableCKFO(boolean isSuccess, String info) {
-                super.enableCKFO(isSuccess, info);
-                updateConsole(info);
-            }
-
-            @Override
-            public void disableCKFO(boolean isSuccess, String info) {
-                super.disableCKFO(isSuccess, info);
+            public void toggleCKFO(boolean isSuccess, String info) {
+                super.toggleCKFO(isSuccess, info);
                 updateConsole(info);
             }
 
@@ -148,14 +142,8 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void enable1PPS(boolean isSuccess, String info) {
-                super.enable1PPS(isSuccess, info);
-                updateConsole(info);
-            }
-
-            @Override
-            public void disable1PPS(boolean isSuccess, String info) {
-                super.disable1PPS(isSuccess, info);
+            public void toggle1PPS(boolean isSuccess, String info) {
+                super.toggle1PPS(isSuccess, info);
                 updateConsole(info);
             }
 
@@ -225,7 +213,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initView() {
         mConsole= (ListView) findViewById(R.id.main_console);
-
     }
 
     @Override
@@ -353,14 +340,14 @@ public class MainActivity extends BaseActivity {
         onClick(R.id.btn_enable_ckfo, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestManager.enableCKFO(true);
+                mRequestManager.toggleCKFO(true);
             }
         });
         //设置校验失败后不输出
         onClick(R.id.btn_disable_ckfo, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestManager.enableCKFO(false);
+                mRequestManager.toggleCKFO(false);
             }
         });
         //设置波特率
@@ -563,17 +550,17 @@ public class MainActivity extends BaseActivity {
     }
 
 
-//    @Override
-//    public synchronized void sendRequest(byte[] request, int start, int len) {
-//        super.sendRequest(request, start, len);
-//        updateConsole(new String(request,start,len));
-//    }
+    @Override
+    public synchronized void sendRequest(byte[] request, int start, int len) {
+        super.sendRequest(request, start, len);
+        updateConsole("发送命令："+new String(request,start,len));
+    }
 
-//    @Override
-//    public void onReceivePortData(final byte[] buffer, final int len) {
-//        super.onReceivePortData(buffer,len);
-//        updateConsole(new String(buffer,0,len).trim());
-//    }
+    @Override
+    public void onReceivePortData(final byte[] buffer, final int len) {
+        super.onReceivePortData(buffer,len);
+        updateConsole("收到应答："+new String(buffer,0,len).trim());
+    }
 
     private void updateConsole(final String msg) {
         BaseApplication.post(new Runnable() {

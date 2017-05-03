@@ -154,7 +154,7 @@ public class AdspRequestManager {
      * 设置校验失败是否输出。
      * @param isToEnable
      */
-    public void enableCKFO(boolean isToEnable){
+    public void toggleCKFO(boolean isToEnable){
         if(isToEnable){
             sendRequest(formRequest(ToggleCkfo,"ENABLE"));
         }else {
