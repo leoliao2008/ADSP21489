@@ -1,9 +1,9 @@
 package com.skycaster.skycaster21489.utils;
 
 import com.skycaster.skycaster21489.abstr.AckCallBack;
-import com.skycaster.skycaster21489.base.AdspActivity;
 
 /**
+ * 用来解析ADSP应答的类。
  * Created by 廖华凯 on 2017/3/28.
  */
 
@@ -12,11 +12,9 @@ public class AdspAckDecipher {
     private byte[] temp=new byte[256];
     private int index=0;
     private boolean isAckConfirmed;
-    private static AdspActivity mActivity;
     private AdspAckDecipher() {
     }
-    public static AdspAckDecipher getInstance(AdspActivity context){
-        mActivity=context;
+    public static AdspAckDecipher getInstance(){
         return ADSP_ACK_DECIFER;
     }
 

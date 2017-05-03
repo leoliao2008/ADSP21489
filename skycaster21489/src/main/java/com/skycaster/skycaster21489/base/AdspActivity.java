@@ -52,7 +52,8 @@ public abstract class AdspActivity extends AppCompatActivity {
     private AdspRequestManager mRequestManager;
 
     /**
-     * 获得AdspRequestManager实例。AdspManager已在AdspActivity的onCreate()方法中默认被初始化。
+     * 获得AdspRequestManager实例。AdspRequestManager已在AdspActivity的onCreate()方法中被初始化，可以通过这个
+     * 方法直接获取该实例。
      * @return 一个AdspRequestManager实例。
      */
     public AdspRequestManager getRequestManager() {
@@ -88,7 +89,7 @@ public abstract class AdspActivity extends AppCompatActivity {
         if(!TextUtils.isEmpty(mSerialPortPath)){
             openSerialPort(mSerialPortPath,mBaudRate);
         }
-        mAdspAckDecipher = AdspAckDecipher.getInstance(this);
+        mAdspAckDecipher = AdspAckDecipher.getInstance();
         mAckCallBack = setSerialPortAckCallBack();
     }
 
@@ -104,22 +105,22 @@ public abstract class AdspActivity extends AppCompatActivity {
     }
 
     /**
-     * 设置对应ADSP各种应答的回调，可根据实际情况覆写AckCallBack类里面的回调函数。
-     * @return 一个整合了各种应答回调的AckCallBack对象，不能为空值。
+     * 设置ADSP应答回调对象，可根据实际情况覆写回调函数。此对象非常重要，不能为空，否则无法解析设备应答。
+     * @return 返回一个回调对象，此对象整合了各种应答的回调函数，开发者根据实际情况覆写即可。
      */
     @NonNull
     protected abstract AckCallBack setSerialPortAckCallBack();
 
 
     /**
-     * 设认默认串口路径
+     * 设认默认串口路径，初次运行将通过此路径打开串口实现ADSP设备串口通信。
      * @return
      */
     @NonNull
     protected abstract String setDefaultSerialPortPath();
 
     /**
-     * 设置默认串口波特率
+     * 设置默认串口波特率，初次运行将通过此波特率打开串口实现ADSP设备串口通信。
      * @return
      */
     @NonNull
@@ -198,7 +199,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     }
 
     /**
-     * 获得当前设备主频。
+     * 获得当前设备频点。
      * @return
      */
     public int getFreq() {
@@ -222,7 +223,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     }
 
     /**
-     * 串口被打开后，必须通过此方法启动串口通信。
+     * 串口被打开后，将通过此方法开启一个子线程，启动串口通信。
      */
     private synchronized void startListeningInputStream() {
         new Thread(new Runnable() {

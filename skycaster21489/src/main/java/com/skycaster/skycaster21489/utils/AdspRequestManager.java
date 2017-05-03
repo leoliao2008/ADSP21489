@@ -177,7 +177,7 @@ public class AdspRequestManager {
     /**
      * 设置ADSP频点。
      * @param freq 频点,注意范围。
-     * @throws FreqOutOfRangeException ADSP主频范围必须为[6400,10800]，否则将抛出此异常。
+     * @throws FreqOutOfRangeException ADSP频点范围必须为[6400,10800]，否则将抛出此异常。
      */
     public void setFreq(int freq) throws FreqOutOfRangeException{
         if(freq<6400||freq>10800){
@@ -454,8 +454,7 @@ public class AdspRequestManager {
         if(mContext.isPortOpen()){
             mContext.sendRequest(request,0,request.length);
         }else {
-            byte[] error="串口还未打开，请先打开串口。".getBytes();
-            mContext.sendRequest(error,0,error.length);
+            mContext.showHint("串口还未打开，请先打开串口。");
         }
     }
 
@@ -486,6 +485,9 @@ public class AdspRequestManager {
         return false;
     }
 
+    /**
+     * 枚举函数，内含所有ADSP命令代码，作为方法的参数，在AdspRequestManager中使用。
+     */
     enum RequestType {
         CheckConnectStatus, Hibernate, ToggleReceivingData,
         CheckSoftwareVersion, CheckDeviceId,CheckSnrRate,CheckSnrStatus,

@@ -115,22 +115,6 @@ public abstract class AckCallBack {
 
     }
 
-//    /**
-//     * 设置校验失败继续输出的回调。
-//     * @param isSuccess 表示请求是否被成功执行。
-//     * @param info 提示信息。
-//     */
-//    public void enableCKFO(boolean isSuccess, String info) {
-//    }
-//
-//    /**
-//     * 设置校验失败停止输出的回调。
-//     * @param isSuccess 表示请求是否被成功执行。
-//     * @param info 提示信息。
-//     */
-//    public void disableCKFO(boolean isSuccess, String info) {
-//
-//    }
 
     /**
      * 设置校验失败是否停止输出的回调。
