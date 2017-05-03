@@ -168,23 +168,6 @@ public abstract class AckCallBack {
 
     }
 
-//    /**
-//     * 设置1PPS开的回调。
-//     * @param isSuccess 表示请求是否被成功执行。
-//     * @param info 提示信息。
-//     */
-//    public void enable1PPS(boolean isSuccess, String info) {
-//
-//    }
-//
-//    /**
-//     * 设置1PPS关的回调。
-//     * @param isSuccess 表示请求是否被成功执行。
-//     * @param info 提示信息。
-//     */
-//    public void disable1PPS(boolean isSuccess, String info) {
-//
-//    }
 
     /**
      * 设置1pps开或关的回调
