@@ -40,7 +40,7 @@ public class FilesBrowserAdapter extends RecyclerView.Adapter<FilesBrowserViewHo
         if(temp.isDirectory()){
             holder.getIv_dir().setVisibility(View.VISIBLE);
             holder.getIv_doc().setVisibility(View.GONE);
-            holder.getIv_dir().setOnClickListener(new View.OnClickListener() {
+            holder.onClick(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     showNewDirContent(temp);
@@ -49,7 +49,7 @@ public class FilesBrowserAdapter extends RecyclerView.Adapter<FilesBrowserViewHo
         }else {
             holder.getIv_dir().setVisibility(View.GONE);
             holder.getIv_doc().setVisibility(View.VISIBLE);
-            holder.getIv_doc().setOnClickListener(new View.OnClickListener() {
+            holder.onClick(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mCallBack.onFileSelected(temp);
@@ -70,8 +70,8 @@ public class FilesBrowserAdapter extends RecyclerView.Adapter<FilesBrowserViewHo
                 mFiles.add(file);
             }
         }
+        notifyDataSetChanged();
         mCallBack.onDirChange(newDir);
-
     }
 
     public void onRequestParentDir(){

@@ -256,9 +256,6 @@ public class AlertDialogUtil {
             @Override
             public void onDirChange(File newDir) {
                 tv_currentDir.setText(newDir.getAbsolutePath());
-                if(filesBrowserAdapter !=null){
-                    filesBrowserAdapter.notifyDataSetChanged();
-                }
             }
 
             @Override

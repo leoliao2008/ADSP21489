@@ -16,11 +16,17 @@ public class FilesBrowserViewHolder extends RecyclerView.ViewHolder {
     private ImageView iv_doc;
     private ImageView iv_dir;
     private TextView tv_fileName;
+    private View itemView;
     public FilesBrowserViewHolder(View itemView) {
         super(itemView);
+        this.itemView=itemView;
         iv_doc = (ImageView) itemView.findViewById(R.id.sd_file_item_iv_doc);
         iv_dir = (ImageView) itemView.findViewById(R.id.sd_file_item_iv_dir);
         tv_fileName= (TextView) itemView.findViewById(R.id.sd_file_item_tv_file_name);
+    }
+
+    public void onClick(View.OnClickListener listener){
+        itemView.setOnClickListener(listener);
     }
 
     public ImageView getIv_doc() {

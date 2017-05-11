@@ -368,7 +368,8 @@ public abstract class AdspActivity extends AppCompatActivity {
                                     public void run() {
                                         requestPermissions(PERMISSIONS,REQUEST_PERMISSIONS);
                                     }
-                                }, new Runnable() {
+                                },
+                                new Runnable() {
                                     @Override
                                     public void run() {
                                         finish();
