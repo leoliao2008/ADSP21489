@@ -8,6 +8,12 @@ import com.skycaster.skycaster21489.utils.AdspRequestManager;
  */
 public abstract class AckCallBack {
 
+    private static int upgradePacketIndex;
+
+    public static void setUpgradePacketIndex(int upgradePacketIndex) {
+        AckCallBack.upgradePacketIndex = upgradePacketIndex;
+    }
+
     /**
      * 解析应答数据时，当字节排列不符合协议规范或数据长度超出上限（512 bytes）时将触发此回调。
      * @param msg 提示信息。
@@ -19,7 +25,15 @@ public abstract class AckCallBack {
      * @param isSuccess true表示正常运行，false反之。
      * @param info 提示信息。
      */
-    public void checkConnectionStatus(boolean isSuccess, String info){}
+    public void checkConnectionStatus(boolean isSuccess, String info){
+        if(AdspRequestManager.isTestingBaudRate()){
+            if(isSuccess){
+                AdspRequestManager.setIsBaudRateSynchronize(true);
+                AdspRequestManager.setIsTestingBaudRate(false);
+                info="波特率校验完毕。";
+            }
+        }
+    }
 
     /**
      * 返回当前ADSP是否已经成功进入休眠状态。
@@ -34,6 +48,9 @@ public abstract class AckCallBack {
      * @param info 提示信息。
      */
     public void startReceivingData(boolean isSuccess, String info) {
+        if(isSuccess){
+            AdspRequestManager.setIsReceivingBizData(true);
+        }
 
     }
 
@@ -42,7 +59,11 @@ public abstract class AckCallBack {
      * @param isSuccess 表示请求是否被成功执行。
      * @param info 提示信息。
      */
-    public void stopReceivingData(boolean isSuccess, String info) {}
+    public void stopReceivingData(boolean isSuccess, String info) {
+        if(isSuccess){
+            AdspRequestManager.setIsReceivingBizData(false);
+        }
+    }
 
     /**
      * 返回当前ADSP系统版本信息。
@@ -99,10 +120,11 @@ public abstract class AckCallBack {
 
     /**
      * 查询Tuner的状态的回调，一般用于内部调试。
-     * @param isStatusNormal  表示Tuner的状态是否正常。
+     * @param isTunerSetSuccessful  表示Tuner是否已被成功设置。
+     * @param isReceivingData 表示Tuner是否正在接收业务数据。
      * @param info 提示信息。
      */
-    public void checkTunerStatus(boolean isStatusNormal, String info) {
+    public void checkTunerStatus(boolean isTunerSetSuccessful, boolean isReceivingData,String info) {
 
     }
 
@@ -207,9 +229,49 @@ public abstract class AckCallBack {
      * @param packageIndex 当前升级包序号
      */
     public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
-        if(isSuccess && Integer.valueOf(packageIndex)==AdspRequestManager.TOTAL_PACKET_COUNT){
-            AdspRequestManager.setIsUpgrading(false,true,"升级成功！");
+        if(isSuccess){
+            Integer index = Integer.valueOf(packageIndex);
+            if(index==AdspRequestManager.TOTAL_PACKET_COUNT){
+                AdspRequestManager.setIsUpgrading(false,true,"升级成功！");
+            }else {
+                if(upgradePacketIndex==index-1){
+                    //如果升级包序号是连续的，则正常下一步
+                    upgradePacketIndex++;
+                }else {
+                    //如果升级包序号不是连续的，则跳出升级，返回失败信息。
+                    AdspRequestManager.setIsUpgrading(false,false,"升级包序号不连续，推测是掉包导致升级失败！");
+                }
+            }
         }
+        //提示AdspRequestManager可以继续走发送升级包的逻辑
+        AdspRequestManager.setIsHoldingSendingUpgradePackets(false);
     }
 
+    //*******************************5月16日新增*************************
+    /**
+     * 查询是否正在接受业务数据的回调
+     * @param isRunning true表示正在接收，false表示状态为空闲。
+     * @param info 提示信息。
+     */
+    public void checkIfReceivingData(boolean isRunning, String info) {
+
+    }
+
+    /**
+     * 设置产品ID的回调
+     * @param isSuccess 是否操作成功
+     * @param info 提示信息
+     */
+    public void setDeviceId(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 查询当前运行的任务清单的回调
+     * @param isSuccess 表示请求是否被执行
+     * @param taskCodes 当前运行的任务的代码清单
+     */
+    public void checkTaskList(boolean isSuccess, String[] taskCodes,String info) {
+
+    }
 }

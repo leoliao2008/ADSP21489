@@ -20,6 +20,7 @@ import com.skycaster.adsp21489.base.BaseActivity;
 import com.skycaster.adsp21489.base.BaseApplication;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
+import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 
 import java.io.File;
@@ -34,6 +35,7 @@ public class MainActivity extends BaseActivity {
     private ArrayAdapter<String> mConsoleAdapter;
     private AdspRequestManager mRequestManager;
     private Random mRandom=new Random();
+
 
 
     @NonNull
@@ -106,8 +108,8 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void checkTunerStatus(boolean isSuccess, String info) {
-                super.checkTunerStatus(isSuccess, info);
+            public void checkTunerStatus(boolean isTunerSetSuccessful, boolean isReceivingData, String info) {
+                super.checkTunerStatus(isTunerSetSuccessful, isReceivingData, info);
                 updateConsole(info);
             }
 
@@ -188,6 +190,24 @@ public class MainActivity extends BaseActivity {
             @Override
             public void check1PpsConfig(boolean isEnable, String info) {
                 super.check1PpsConfig(isEnable, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkIfReceivingData(boolean isRunning, String info) {
+                super.checkIfReceivingData(isRunning, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void checkTaskList(boolean isSuccess, String[] taskCodes, String info) {
+                super.checkTaskList(isSuccess, taskCodes, info);
+                updateConsole(info);
+            }
+
+            @Override
+            public void setDeviceId(boolean isSuccess, String info) {
+                super.setDeviceId(isSuccess, info);
                 updateConsole(info);
             }
         };
@@ -433,33 +453,59 @@ public class MainActivity extends BaseActivity {
             }
         });
 
+        //***********************************5月16日新增命令************************************
+        //查询当前是否正在接受业务数据
+        onClick(R.id.btn_check_if_receiving_data, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkIfRecievingData();
+            }
+        });
+
+        //设置产品id
+        onClick(R.id.btn_set_device_id, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSetDeviceIdDialog(MainActivity.this, new AlertDialogUtil.SetDeviceIdListener() {
+                    @Override
+                    public void onDeviceIdConfirm(String id) {
+                        try {
+                            mRequestManager.setDeviceId(id);
+                        } catch (DeviceIdOverLengthException e) {
+                            showHint(e.toString());
+                        }
+                    }
+                });
+            }
+        });
+
         //---------------------------------------------------------------------模拟接收-------------------------------------------------------------------//
         //测试连接成功
-        clickToSendAck(R.id.ack_btn_connect_ok, "+OK\r\n");
+        setClickToSendAck(R.id.ack_btn_connect_ok, "+OK\r\n");
         //测试休眠成功
-        clickToSendAck(R.id.ack_btn_hibernate_ok, "+HBNT=OK\r\n");
+        setClickToSendAck(R.id.ack_btn_hibernate_ok, "+HBNT=OK\r\n");
         //测试休眠失败
-        clickToSendAck(R.id.ack_btn_hibernate_error, "+HBNT=ERROR:1\r\n");
+        setClickToSendAck(R.id.ack_btn_hibernate_error, "+HBNT=ERROR:1\r\n");
         //测试接收机开启成功
-        clickToSendAck(R.id.ack_btn_adsp_start_ok,"+RECVOP=OK:OPEN\r\n");
+        setClickToSendAck(R.id.ack_btn_adsp_start_ok,"+RECVOP=OK:OPEN\r\n");
         //测试接收机关闭成功
-        clickToSendAck(R.id.ack_btn_adsp_stop_ok,"+RECVOP=OK:CLOSE\r\n");
+        setClickToSendAck(R.id.ack_btn_adsp_stop_ok,"+RECVOP=OK:CLOSE\r\n");
         //测试接收机开启失败
-        clickToSendAck(R.id.ack_btn_adsp_start_error,"+RECVOP=ERROR:OPEN\r\n");
+        setClickToSendAck(R.id.ack_btn_adsp_start_error,"+RECVOP=ERROR:OPEN\r\n");
         //测试接收机关闭失败
-        clickToSendAck(R.id.ack_btn_adsp_stop_error,"+RECVOP=ERROR:CLOSE\r\n");
+        setClickToSendAck(R.id.ack_btn_adsp_stop_error,"+RECVOP=ERROR:CLOSE\r\n");
         //测试获取软件版本
-        clickToSendAck(R.id.ack_btn_software_version,"+SVER:ver1.0\r\n");
+        setClickToSendAck(R.id.ack_btn_software_version,"+SVER:ver1.0\r\n");
         //测试获取产品id
-        clickToSendAck(R.id.ack_btn_product_id,"+ID:3.1415926\r\n");
+        setClickToSendAck(R.id.ack_btn_product_id,"+ID:3.1415926\r\n");
         //查询当前信噪比
-        clickToSendAck(R.id.ack_btn_snr_rate,"+SNR:27.50\r\n");
+        setClickToSendAck(R.id.ack_btn_snr_rate,"+SNR:27.50\r\n");
         //查询当前接收状态
-        clickToSendAck(R.id.ack_btn_snr_status,"+STAT:Frame detecting\r\n");
+        setClickToSendAck(R.id.ack_btn_snr_status,"+STAT:Frame detecting\r\n");
         //查询时偏
-        clickToSendAck(R.id.ack_btn_time_offset,"+SFO:28.00\r\n");
+        setClickToSendAck(R.id.ack_btn_time_offset,"+SFO:28.00\r\n");
         //查询频偏
-        clickToSendAck(R.id.ack_btn_freq_offset,"+CFO:64.05\r\n");
+        setClickToSendAck(R.id.ack_btn_freq_offset,"+CFO:64.05\r\n");
         //查询tuner状态
         onClick(R.id.ack_btn_tuner_status, new View.OnClickListener() {
             @Override
@@ -493,44 +539,44 @@ public class MainActivity extends BaseActivity {
             }
         });
         //设置校验失败是否输出
-        clickToSendAck(R.id.ack_btn_ckfo_enable_ok,"+CKFO=OK:ENABLE\r\n");
-        clickToSendAck(R.id.ack_btn_ckfo_disable_ok,"+CKFO=OK:DISABLE\r\n");
-        clickToSendAck(R.id.ack_btn_ckfo_enable_error,"+CKFO=ERROR:ENABLE\r\n");
-        clickToSendAck(R.id.ack_btn_ckfo_disable_error,"+CKFO=ERROR:DISABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_ckfo_enable_ok,"+CKFO=OK:ENABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_ckfo_disable_ok,"+CKFO=OK:DISABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_ckfo_enable_error,"+CKFO=ERROR:ENABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_ckfo_disable_error,"+CKFO=ERROR:DISABLE\r\n");
         //设置波特率
-        clickToSendAck(R.id.ack_btn_set_baud_rate_ok,"+BDRT=OK\r\n");
-        clickToSendAck(R.id.ack_btn_set_baud_rate_error,"+BDRT=ERROR\r\n");
+        setClickToSendAck(R.id.ack_btn_set_baud_rate_ok,"+BDRT=OK\r\n");
+        setClickToSendAck(R.id.ack_btn_set_baud_rate_error,"+BDRT=ERROR\r\n");
         //设置频点
-        clickToSendAck(R.id.ack_btn_set_freq_ok,"+FREQ=OK\r\n");
-        clickToSendAck(R.id.ack_btn_set_freq_error,"+FREQ=ERROR\r\n");
+        setClickToSendAck(R.id.ack_btn_set_freq_ok,"+FREQ=OK\r\n");
+        setClickToSendAck(R.id.ack_btn_set_freq_error,"+FREQ=ERROR\r\n");
         //设置接收模式
-        clickToSendAck(R.id.ack_btn_set_tunes_ok,"+RMODE=OK\r\n");
-        clickToSendAck(R.id.ack_btn_set_tunes_error,"+RMODE=ERROR\r\n");
+        setClickToSendAck(R.id.ack_btn_set_tunes_ok,"+RMODE=OK\r\n");
+        setClickToSendAck(R.id.ack_btn_set_tunes_error,"+RMODE=ERROR\r\n");
         //设置1pps开关
-        clickToSendAck(R.id.ack_btn_set_1pps_open_ok,"+1PPS=OK:OPEN\r\n");
-        clickToSendAck(R.id.ack_btn_set_1pps_close_ok,"+1PPS=OK:CLOSE\r\n");
-        clickToSendAck(R.id.ack_btn_set_1pps_open_error,"+1PPS=ERROR:OPEN\r\n");
-        clickToSendAck(R.id.ack_btn_set_1pps_close_error,"+1PPS=ERROR:CLOSE\r\n");
+        setClickToSendAck(R.id.ack_btn_set_1pps_open_ok,"+1PPS=OK:OPEN\r\n");
+        setClickToSendAck(R.id.ack_btn_set_1pps_close_ok,"+1PPS=OK:CLOSE\r\n");
+        setClickToSendAck(R.id.ack_btn_set_1pps_open_error,"+1PPS=ERROR:OPEN\r\n");
+        setClickToSendAck(R.id.ack_btn_set_1pps_close_error,"+1PPS=ERROR:CLOSE\r\n");
         //测试输出所有业务或特定业务------待议
         //启动升级
-        clickToSendAck(R.id.ack_btn_prepare_upgrade_ok,"+STUD=OK\r\n");
-        clickToSendAck(R.id.ack_btn_prepare_upgrade_error,"+STUD=ERROR\r\n");
+        setClickToSendAck(R.id.ack_btn_prepare_upgrade_ok,"+STUD=OK\r\n");
+        setClickToSendAck(R.id.ack_btn_prepare_upgrade_error,"+STUD=ERROR\r\n");
 
         //*********************************新增应答*************************************************
         //查询验证失败是否继续输出
-        clickToSendAck(R.id.ack_btn_check_ckfo_enable_yes,"+CKFO:ENABLE\r\n");
-        clickToSendAck(R.id.ack_btn_check_ckfo_enable_no,"+CKFO:DISABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_check_ckfo_enable_yes,"+CKFO:ENABLE\r\n");
+        setClickToSendAck(R.id.ack_btn_check_ckfo_enable_no,"+CKFO:DISABLE\r\n");
         //查询当前设备频点
-        clickToSendAck(R.id.ack_btn_check_freq,"+FREQ:9800\r\n");
+        setClickToSendAck(R.id.ack_btn_check_freq,"+FREQ:9800\r\n");
         //查询当前设备左频及右频
-        clickToSendAck(R.id.ack_btn_check_tunes,"+RMODE:60,63\r\n");
+        setClickToSendAck(R.id.ack_btn_check_tunes,"+RMODE:60,63\r\n");
         //查询1PPS是否开启
-        clickToSendAck(R.id.ack_btn_check_1pps_config_enable,"+1PPS:OPEN\r\n");
-        clickToSendAck(R.id.ack_btn_check_1pps_config_disable,"+1PPS:CLOSE\r\n");
+        setClickToSendAck(R.id.ack_btn_check_1pps_config_enable,"+1PPS:OPEN\r\n");
+        setClickToSendAck(R.id.ack_btn_check_1pps_config_disable,"+1PPS:CLOSE\r\n");
         //发送了一个成功的升级包
-        clickToSendAck(R.id.ack_btn_send_upgrade_package_ok,"+UDDA=OK:18\r\n");
+        setClickToSendAck(R.id.ack_btn_send_upgrade_package_ok,"+UDDA=OK:18\r\n");
         //发送了一个失败的升级包
-        clickToSendAck(R.id.ack_btn_send_upgrade_package_error,"+UDDA=ERROR:19\r\n");
+        setClickToSendAck(R.id.ack_btn_send_upgrade_package_error,"+UDDA=ERROR:19\r\n");
 
     }
 
@@ -540,7 +586,7 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    private void clickToSendAck(int buttonId, final String ack){
+    private void setClickToSendAck(int buttonId, final String ack){
         onClick(buttonId, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -553,13 +599,19 @@ public class MainActivity extends BaseActivity {
     @Override
     public synchronized void sendRequest(byte[] request, int start, int len) {
         super.sendRequest(request, start, len);
-        updateConsole("发送命令："+new String(request,start,len));
+//        updateConsole("发送命令："+new String(request,start,len));
     }
+
+    @Override
+    protected void onGetBizData(byte[] bizData) {
+        updateConsole(new String(bizData));
+    }
+
 
     @Override
     public void onReceivePortData(final byte[] buffer, final int len) {
         super.onReceivePortData(buffer,len);
-        updateConsole("收到应答："+new String(buffer,0,len).trim());
+//        updateConsole("收到应答："+new String(buffer,0,len).trim());
     }
 
     private void updateConsole(final String msg) {
@@ -599,9 +651,16 @@ public class MainActivity extends BaseActivity {
             case android.R.id.home:
                 confirmBackPress();
                 break;
+            case R.id.menu_clear_console:
+                clearConsole();
             default:
                 break;
         }
         return true;
+    }
+
+    private void clearConsole() {
+        mConsoleContents.clear();
+        mConsoleAdapter.notifyDataSetChanged();
     }
 }

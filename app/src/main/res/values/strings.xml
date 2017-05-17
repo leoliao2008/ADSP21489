@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ADSP21489测试</string>
+    <string name="app_name">21489测试</string>
     <string name="please_select_upgrade_file">请选择升级文件</string>
 
     <string-array name="baudrates_value">

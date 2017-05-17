@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     protected static final String LEFT_TUNE = "left_tune";
     protected static final String RIGHT_TUNE = "right_tune";
     private static final int REQUEST_PERMISSIONS = 911;
+    private static final int BIZ_DATA_LEN=10;
     protected SerialPort mSerialPort;
     protected int mBaudRate;
     protected String mSerialPortPath;
@@ -50,6 +52,9 @@ public abstract class AdspActivity extends AppCompatActivity {
     private AckCallBack mAckCallBack;
     private static final String[] PERMISSIONS=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
     private AdspRequestManager mRequestManager;
+    private byte[] bizData=new byte[BIZ_DATA_LEN];
+    private int bizDataIndex =0;
+    private Handler mHandler;
 
     /**
      * 获得AdspRequestManager实例。AdspRequestManager已在AdspActivity的onCreate()方法中被初始化，可以通过这个
@@ -89,8 +94,9 @@ public abstract class AdspActivity extends AppCompatActivity {
         if(!TextUtils.isEmpty(mSerialPortPath)){
             openSerialPort(mSerialPortPath,mBaudRate);
         }
-        mAdspAckDecipher = AdspAckDecipher.getInstance();
+        mAdspAckDecipher = AdspAckDecipher.getInstance(this);
         mAckCallBack = setSerialPortAckCallBack();
+        mHandler=new Handler();
     }
 
     @Override
@@ -102,6 +108,7 @@ public abstract class AdspActivity extends AppCompatActivity {
         if (!isPortOpen){
             showHint("串口参数设置错误，请更改串口路径及波特率重试");
         }
+        mRequestManager.testBaudRates();
     }
 
     /**
@@ -150,6 +157,15 @@ public abstract class AdspActivity extends AppCompatActivity {
             startListeningInputStream();
         }
         return isPortOpen;
+    }
+
+    /**
+     * 更改当前串口的波特率，串口路径不变。
+     * @param newBaudRate 新的波特率
+     * @return 返回true则表示成功打开，false为失败。
+     */
+    public boolean changeBaudRate(int newBaudRate){
+        return openSerialPort(mSerialPortPath,newBaudRate);
     }
 
     /**
@@ -392,4 +408,32 @@ public abstract class AdspActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * 发起业务数据后，接收到业务数据后的回调。仅供特定内部函数调用，不建议开发者直接调用此方法。
+     * @param bizByte 单个字节的业务数据
+     */
+    public void onReceiveBizDataByte(byte bizByte){
+        bizData[bizDataIndex]=bizByte;
+        bizDataIndex++;
+        if(bizDataIndex==BIZ_DATA_LEN){
+            bizDataIndex=0;
+            onGetBizData(bizData.clone());
+        }
+    }
+
+    /**
+     * 将收集到的业务数据一次性返回给调用方。
+     * @param bizData 业务数据
+     */
+    protected abstract void onGetBizData(byte[] bizData);
+
+    public void post(Runnable runnable){
+        mHandler.post(runnable);
+    }
+
+    public void postDelay(Runnable runnable,long millis){
+        mHandler.postDelayed(runnable,millis);
+    }
+
 }

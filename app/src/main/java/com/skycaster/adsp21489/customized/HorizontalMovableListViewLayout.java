@@ -43,7 +43,8 @@ public class HorizontalMovableListViewLayout extends PercentFrameLayout {
                     mViewDragHelper=ViewDragHelper.create(HorizontalMovableListViewLayout.this, new ViewDragHelper.Callback() {
                         @Override
                         public boolean tryCaptureView(View child, int pointerId) {
-                            return child.equals(mSlidingChild);
+//                            return child.equals(mSlidingChild);
+                            return false;
                         }
 
                         @Override

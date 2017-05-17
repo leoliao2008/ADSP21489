@@ -298,4 +298,41 @@ public class AlertDialogUtil {
         void onUpgradeFileSelected(File upgradeFile);
     }
 
+    public static void showSetDeviceIdDialog(Context context, final SetDeviceIdListener listener){
+        //init view
+        View rootView=LayoutInflater.from(context).inflate(R.layout.set_device_id_layout,null);
+        final EditText edt_inputId= (EditText) rootView.findViewById(R.id.set_device_id_layout_edt_input_id);
+        Button btn_confirm= (Button) rootView.findViewById(R.id.set_device_id_layout_btn_confirm);
+        Button btn_cancel= (Button) rootView.findViewById(R.id.set_device_id_layout_btn_cancel);
+        //init data
+        //init listener
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = edt_inputId.getText().toString().trim();
+                if(!TextUtils.isEmpty(input)){
+                    listener.onDeviceIdConfirm(input);
+                    mAlertDialog.dismiss();
+                }else {
+                    ToastUtil.showToast("请输入ID字符串。");
+                }
+            }
+        });
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAlertDialog.dismiss();
+            }
+        });
+        //create dialog
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        mAlertDialog=builder.setView(rootView).create();
+        mAlertDialog.show();
+    }
+
+    public interface SetDeviceIdListener{
+        void onDeviceIdConfirm(String id);
+    }
+
 }

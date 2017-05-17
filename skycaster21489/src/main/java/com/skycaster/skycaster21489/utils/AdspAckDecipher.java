@@ -1,6 +1,7 @@
 package com.skycaster.skycaster21489.utils;
 
 import com.skycaster.skycaster21489.abstr.AckCallBack;
+import com.skycaster.skycaster21489.base.AdspActivity;
 
 /**
  * 用来解析ADSP应答的类。
@@ -12,9 +13,11 @@ public class AdspAckDecipher {
     private byte[] temp=new byte[256];
     private int index=0;
     private boolean isAckConfirmed;
+    private static AdspActivity mActivity;
     private AdspAckDecipher() {
     }
-    public static AdspAckDecipher getInstance(){
+    public static AdspAckDecipher getInstance(AdspActivity adspActivity){
+        mActivity=adspActivity;
         return ADSP_ACK_DECIFER;
     }
 
@@ -28,6 +31,8 @@ public class AdspAckDecipher {
                     isAckConfirmed=true;
                     index=0;
 //                    showLog("------ack confirmed");
+                }else if(AdspRequestManager.isReceivingBizData()){
+                    mActivity.onReceiveBizDataByte(buffer[i]);
                 }
             }else {
 //                showLog("current byte in int form:"+buffer[i]);
@@ -122,7 +127,25 @@ public class AdspAckDecipher {
                 ackCallBack.checkSnrRate(true,acks[1]);
                 break;
             case "STAT":
-                ackCallBack.checkSnrStatus(true,acks[1]);
+                String statusDescription;
+                switch (acks[1]){
+                    case "0":
+                        statusDescription="未开机";
+                        break;
+                    case "1":
+                        statusDescription="就绪";
+                        break;
+                    case "2":
+                        statusDescription="锁定";
+                        break;
+                    case "3":
+                        statusDescription="停止工作";
+                        break;
+                    default:
+                        statusDescription="无效参数，解析失败";
+                        break;
+                }
+                ackCallBack.checkSnrStatus(true,statusDescription);
                 break;
             case "SFO":
                 ackCallBack.checkSfo(true,acks[1]);
@@ -132,28 +155,43 @@ public class AdspAckDecipher {
                 break;
             case "TUNER":
                 sb.append("当前Tuner状态为：");
-                switch (acks[1]){
-                    case "0":
-                        sb.append("正常。");
-                        ackCallBack.checkTunerStatus(true,sb.toString());
-                        break;
-                    case "1":
-                        sb.append("设置失败。");
-                        ackCallBack.checkTunerStatus(false,sb.toString());
-                        break;
-                    case "2":
-                        sb.append("无数据输入。");
-                        ackCallBack.checkTunerStatus(false,sb.toString());
-                        break;
-                    default:
-                        sb.append("参数有误，无法解析。");
-                        ackCallBack.checkTunerStatus(false,sb.toString());
-                        break;
+                boolean isTunerSetSuccessful=false;
+                boolean isReceivingData=false;
+                String[] stats = acks[1].split(",");
+                if(stats.length==2){
+                    switch (stats[0]){
+                        case "0":
+                            sb.append("设置失败，");
+                            break;
+                        case "1":
+                            sb.append("设置成功,");
+                            isTunerSetSuccessful=true;
+                            break;
+                        default:
+                            sb.append("参数不符合协议，解析失败；");
+                            break;
+                    }
+                    switch (stats[1]){
+                        case "0":
+                            sb.append("无数据输入。");
+                            break;
+                        case "1":
+                            sb.append("有数据输入。");
+                            isReceivingData=true;
+                            break;
+                        default:
+                            sb.append("参数不符合协议，解析失败。");
+                            break;
+                    }
+                }else {
+                    sb.append("参数有误，无法解析。");
                 }
+                ackCallBack.checkTunerStatus(isTunerSetSuccessful,isReceivingData,sb.toString());
                 break;
             case "QSRV":
                 //协议待定
-                sb.append("当前任务清单：");
+                sb.append("当前任务清单：").append(acks[1]);
+                ackCallBack.checkTaskList(true,acks[1].split(","),sb.toString());
                 break;
             case "TIME":
                 String[] strings = acks[1].split(",");
@@ -185,7 +223,7 @@ public class AdspAckDecipher {
                 ackCallBack.toggleCKFO(false,sb.toString());
                 break;
             case "BDRT=OK":
-                sb.append("设置波特率:成功。");
+                sb.append("设置波特率:成功，重启后生效。");
                 ackCallBack.setBaudRate(true,sb.toString());
                 break;
             case "BDRT=ERROR":
@@ -301,6 +339,26 @@ public class AdspAckDecipher {
                         ackCallBack.onError("1pps 目前状态为:状态码有误，返回错误。");
                         break;
                 }
+                break;
+            //*******************5月17日新增应答***************************
+            case "RECVOP":
+                switch (acks[1]){
+                    case "OPEN":
+                        ackCallBack.checkIfReceivingData(true,"查询当前业务数据状态结果：正在接收。");
+                        break;
+                    case "CLOSE":
+                        ackCallBack.checkIfReceivingData(false,"查询当前业务数据状态结果：状态为关闭。");
+                        break;
+                    default:
+                        ackCallBack.onError("查询当前业务数据状态结果：状态内容不符合协议，解析失败。");
+                        break;
+                }
+                break;
+            case "ID=OK":
+                ackCallBack.setDeviceId(true,"设置产品ID成功。");
+                break;
+            case "ID=ERROR":
+                ackCallBack.setDeviceId(false,"设置产品ID失败。");
                 break;
             default:
                 ackCallBack.onError("数据格式不符合协议，解析失败。");
