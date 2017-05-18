@@ -10,4 +10,5 @@
     <color name="colorBlack">#000</color>
     <color name="color_text_hint">#9E9FA5</color>
     <color name="color_white">#fff</color>
+    <color name="color_sub_console_bg">#45494A</color>
 </resources>

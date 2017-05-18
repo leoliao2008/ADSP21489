@@ -36,8 +36,9 @@ public class AdspAckDecipher {
                 }
             }else {
 //                showLog("current byte in int form:"+buffer[i]);
-                if(buffer[i]=='\r'||buffer[i]=='\n'){
+                if(buffer[i]=='\n'&&buffer[i-1]=='\r'){
 //                    showLog("------begin to decipher");
+                    temp[index]=buffer[i];
                     decipher(temp,index, ackCallBack);
                     isAckConfirmed=false;
                 }else {
@@ -56,7 +57,7 @@ public class AdspAckDecipher {
 
     private void decipher(byte[] buffer, int len,AckCallBack ackCallBack){
         StringBuffer sb=new StringBuffer();
-        String[] acks = new String(buffer,0,len).split(":");
+        String[] acks = new String(buffer,0,len).trim().split(":");
         if(acks.length<2){
             String temp=acks[0];
             acks=new String[]{temp,"NULL"};

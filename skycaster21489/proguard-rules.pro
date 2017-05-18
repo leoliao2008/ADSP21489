@@ -49,6 +49,8 @@
 -keep public class com.skycaster.skycaster21489.utils.AdspRequestManager { *; }
 -keep public class project.SerialPort.* { *; }
 -keep class * extends java.lang.annotation.Annotation { *; }
+-keep public class com.skycaster.skycaster21489.data.* { *; }
+
 
 #-keep public class * extends android.app.Activity
 #-keep public class * extends android.app.Application

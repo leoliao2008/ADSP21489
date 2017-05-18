@@ -6,7 +6,7 @@ import android.text.TextUtils;
 
 import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.base.AdspActivity;
-import com.skycaster.skycaster21489.excpt.BaudRateOutOfRangeException;
+import com.skycaster.skycaster21489.data.AdspBaudRates;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
@@ -55,10 +55,14 @@ public class AdspRequestManager {
     public static int TOTAL_PACKET_COUNT;
     private static boolean isUpgrading=false;
     private static boolean isReceivingBizData=false;
-    private static boolean isHoldingSendingUpgradePackets =false;
+    private static boolean isHoldingUpgradePackets =false;
     private static boolean isTestingBaudRate=false;
     private static boolean isBaudRateSynchronize=false;
-    private static final int[] BAUD_RATES=new int[]{9600,19200,115200};
+    /**
+     * 盛装系统指定的波特率种类的容器
+     */
+    private static int[] BAUD_RATES;
+
 
     public static boolean isTestingBaudRate() {
         return isTestingBaudRate;
@@ -68,20 +72,12 @@ public class AdspRequestManager {
         AdspRequestManager.isTestingBaudRate = isTestingBaudRate;
     }
 
-    public static boolean isBaudRateSynchronize() {
-        return isBaudRateSynchronize;
-    }
-
     public static void setIsBaudRateSynchronize(boolean isBaudRateSynchronize) {
         AdspRequestManager.isBaudRateSynchronize = isBaudRateSynchronize;
     }
 
-    public static boolean isHoldingSendingUpgradePackets() {
-        return isHoldingSendingUpgradePackets;
-    }
-
-    public static void setIsHoldingSendingUpgradePackets(boolean isHoldingSendingUpgradePackets) {
-        AdspRequestManager.isHoldingSendingUpgradePackets = isHoldingSendingUpgradePackets;
+    public static void setIsHoldingUpgradePackets(boolean isHoldingUpgradePackets) {
+        AdspRequestManager.isHoldingUpgradePackets = isHoldingUpgradePackets;
     }
 
     public static boolean isReceivingBizData() {
@@ -99,6 +95,12 @@ public class AdspRequestManager {
      */
     public static AdspRequestManager getInstance(AdspActivity context) {
         mContext=context;
+        AdspBaudRates[] baudRates = AdspBaudRates.values();
+        int len = baudRates.length;
+        BAUD_RATES=new int[len];
+        for(int i=0;i<len;i++){
+            BAUD_RATES[i]=baudRates[i].toInt();
+        }
         return ADSP_REQUEST_MANAGER;
     }
 
@@ -235,15 +237,10 @@ public class AdspRequestManager {
     }
     /**
      * 设置波特率。
-     * @param rate 波特率。注意：只能设置9600(bps)、19200(bps)、115200(bps)三种。
-     * @throws BaudRateOutOfRangeException 波特率只能设置9600(bps)、19200(bps)、115200(bps)三种之一，否则抛出此异常。
+     * @param baudRate 波特率。注意：只能设置9600(bps)、19200(bps)、115200(bps)三种。
      */
-    public void setBaudRate(int rate) throws BaudRateOutOfRangeException{
-        if(rate==9600||rate==19200||rate==115200){
-            sendRequest(formRequest(SetBaudRate,String.valueOf(rate)));
-        }else {
-            throw new BaudRateOutOfRangeException("只能设置9600(bps)、19200(bps)、115200(bps)三种波特率。");
-        }
+    public void setBaudRate(AdspBaudRates baudRate) {
+        sendRequest(formRequest(SetBaudRate,baudRate.toString()));
     }
 
     /**
@@ -385,8 +382,8 @@ public class AdspRequestManager {
                         mContext.sendRequest(fullPart,0,fullPart.length);
                         currentPacketIndex++;
                         //等待AckCallBack的onReceiveUpgradePackage（）回调判断升级包确实被收到后，才能发送下一个升级包。
-                        isHoldingSendingUpgradePackets =true;
-                        while (isHoldingSendingUpgradePackets){}
+                        isHoldingUpgradePackets =true;
+                        while (isHoldingUpgradePackets){}
                     }
                     in.close();
                 } catch (IOException e) {

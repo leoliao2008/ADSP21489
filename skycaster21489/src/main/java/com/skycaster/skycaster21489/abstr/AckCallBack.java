@@ -244,7 +244,7 @@ public abstract class AckCallBack {
             }
         }
         //提示AdspRequestManager可以继续走发送升级包的逻辑
-        AdspRequestManager.setIsHoldingSendingUpgradePackets(false);
+        AdspRequestManager.setIsHoldingUpgradePackets(false);
     }
 
     //*******************************5月16日新增*************************

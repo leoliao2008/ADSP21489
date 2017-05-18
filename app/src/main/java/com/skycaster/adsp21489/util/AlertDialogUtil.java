@@ -24,7 +24,7 @@ import com.skycaster.adsp21489.R;
 import com.skycaster.adsp21489.activity.MainActivity;
 import com.skycaster.adsp21489.adapter.FilesBrowserAdapter;
 import com.skycaster.skycaster21489.base.AdspActivity;
-import com.skycaster.skycaster21489.excpt.BaudRateOutOfRangeException;
+import com.skycaster.skycaster21489.data.AdspBaudRates;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
 
@@ -113,8 +113,13 @@ public class AlertDialogUtil {
             btn_confirm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    activity.openSerialPort(selectedPath, selectedBaudRate);
-                    mAlertDialog.dismiss();
+                    if(selectedPath!=null){
+                        activity.openSerialPort(selectedPath, selectedBaudRate);
+                        mAlertDialog.dismiss();
+                    }else {
+                        ToastUtil.showToast("串口路径不能为空。");
+                    }
+
                 }
             });
 
@@ -154,12 +159,19 @@ public class AlertDialogUtil {
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //todo：是不是应该也同时修改本机的波特率呢？
-                        try {
-                            context.getRequestManager().setBaudRate(Integer.valueOf(baudRateList[selectedBaudRateIndex]));
+                        Integer baudRate = Integer.valueOf(baudRateList[selectedBaudRateIndex]);
+                        AdspBaudRates adspBaudRate=null;
+                        for(AdspBaudRates temp:AdspBaudRates.values()){
+                            if(temp.toInt()==baudRate){
+                                adspBaudRate=temp;
+                                break;
+                            }
+                        }
+                        if(adspBaudRate!=null){
+                            context.getRequestManager().setBaudRate(adspBaudRate);
                             mAlertDialog.dismiss();
-                        } catch (BaudRateOutOfRangeException e) {
-                            ToastUtil.showToast(e.getMessage());
+                        }else {
+                            ToastUtil.showToast("设备不支持该波特率。");
                         }
                     }
                 })

@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menu_clear_console"
-          android:icon="@drawable/selector_ic_renew"
-          android:title="清空所有信息"
+    <item android:id="@+id/menu_enable_save"
+          android:icon="@drawable/selector_ic_save_36dp"
+          android:title="保存业务数据"
           app:showAsAction="always"/>
 
 

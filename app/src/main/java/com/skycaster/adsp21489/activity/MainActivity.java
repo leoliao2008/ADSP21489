@@ -4,20 +4,21 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.skycaster.adsp21489.R;
+import com.skycaster.adsp21489.adapter.ConsoleAdapter;
 import com.skycaster.adsp21489.base.BaseActivity;
 import com.skycaster.adsp21489.base.BaseApplication;
+import com.skycaster.adsp21489.bean.ConsoleItem;
+import com.skycaster.adsp21489.data.ConsoleItemType;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
@@ -29,12 +30,16 @@ import java.util.Date;
 import java.util.Random;
 
 public class MainActivity extends BaseActivity {
-    private ListView mConsole;
+    private ListView mMainConsole;
     private ActionBar mActionBar;
-    private ArrayList<String > mConsoleContents=new ArrayList<>();
-    private ArrayAdapter<String> mConsoleAdapter;
+    private ArrayList<ConsoleItem> mMainConsoleContents =new ArrayList<>();
+    private ConsoleAdapter mMainConsoleAdapter;
     private AdspRequestManager mRequestManager;
     private Random mRandom=new Random();
+    private ListView mSubConsole;
+    private ArrayList<ConsoleItem> mSubConsoleContents=new ArrayList<>();
+    private ConsoleAdapter mSubConsoleAdapter;
+    private boolean isKeepRecord;
 
 
 
@@ -44,124 +49,124 @@ public class MainActivity extends BaseActivity {
         return new AckCallBack() {
             @Override
             public void onError(final String msg) {
-                updateConsole(msg);
+                updateMainConsole(msg);
             }
 
             @Override
             public void checkConnectionStatus(boolean isSuccess, String info) {
                 super.checkConnectionStatus(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void hibernate(boolean isSuccess, String info) {
                 super.hibernate(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void startReceivingData(boolean isSuccess, String info) {
                 super.startReceivingData(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void stopReceivingData(boolean isSuccess, String info) {
                 super.stopReceivingData(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkSoftwareVersion(boolean isSuccess, String info) {
                 super.checkSoftwareVersion(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkDeviceId(boolean isSuccess, String info) {
                 super.checkDeviceId(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkSnrRate(boolean isSuccess, String info) {
                 super.checkSnrRate(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkSnrStatus(boolean isSuccess, String info) {
                 super.checkSnrStatus(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkSfo(boolean isSuccess, String info) {
                 super.checkSfo(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkCfo(boolean isSuccess, String info) {
                 super.checkCfo(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkTunerStatus(boolean isTunerSetSuccessful, boolean isReceivingData, String info) {
                 super.checkTunerStatus(isTunerSetSuccessful, isReceivingData, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkDate(boolean isSuccess, String info) {
                 super.checkDate(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void toggleCKFO(boolean isSuccess, String info) {
                 super.toggleCKFO(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void setBaudRate(boolean isSuccess, String info) {
                 super.setBaudRate(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void setFreq(boolean isSuccess, String info) {
                 super.setFreq(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void setTuners(boolean isSuccess, String info) {
                 super.setTuners(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void toggle1PPS(boolean isSuccess, String info) {
                 super.toggle1PPS(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void prepareUpgrade(boolean isSuccess, String info) {
                 super.prepareUpgrade(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
                 super.onReceiveUpgradePackage(isSuccess, packageIndex);
                 if(isSuccess){
-                    updateConsole("数据包接收成功，当前包号为"+ packageIndex);
+                    updateMainConsole("数据包接收成功，当前包号为"+ packageIndex);
                 }else {
-                    updateConsole("数据包接收失败，当前包号为"+ packageIndex);
+                    updateMainConsole("数据包接收失败，当前包号为"+ packageIndex);
                 }
 
             }
@@ -172,43 +177,43 @@ public class MainActivity extends BaseActivity {
             @Override
             public void checkCkfoSetting(boolean isEnable, String info) {
                 super.checkCkfoSetting(isEnable, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkFreq(boolean isSuccess, String info) {
                 super.checkFreq(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkTunes(boolean isSuccess, String leftTune, String rightTune) {
                 super.checkTunes(isSuccess, leftTune, rightTune);
-                updateConsole("左频:"+leftTune+" 右频："+rightTune);
+                updateMainConsole("左频:"+leftTune+" 右频："+rightTune);
             }
 
             @Override
             public void check1PpsConfig(boolean isEnable, String info) {
                 super.check1PpsConfig(isEnable, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkIfReceivingData(boolean isRunning, String info) {
                 super.checkIfReceivingData(isRunning, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void checkTaskList(boolean isSuccess, String[] taskCodes, String info) {
                 super.checkTaskList(isSuccess, taskCodes, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
 
             @Override
             public void setDeviceId(boolean isSuccess, String info) {
                 super.setDeviceId(isSuccess, info);
-                updateConsole(info);
+                updateMainConsole(info);
             }
         };
     }
@@ -232,7 +237,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        mConsole= (ListView) findViewById(R.id.main_console);
+        mMainConsole = (ListView) findViewById(R.id.main_console);
+        mSubConsole= (ListView) findViewById(R.id.sub_console);
     }
 
     @Override
@@ -248,22 +254,68 @@ public class MainActivity extends BaseActivity {
             }
         }
 
-        mConsoleAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,mConsoleContents){
-            @NonNull
+        //初始化main console
+        mMainConsoleAdapter=new ConsoleAdapter(mMainConsoleContents,this){
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            public View getView(int position, View convertView, ViewGroup parent) {
                 TextView textView = (TextView) super.getView(position, convertView, parent);
                 textView.setGravity(Gravity.CENTER);
                 return textView;
             }
         };
-        mConsole.setAdapter(mConsoleAdapter);
+        mMainConsole.setAdapter(mMainConsoleAdapter);
+        //初始化sub console
+        mSubConsoleAdapter=new ConsoleAdapter(mSubConsoleContents,this){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView textView= (TextView) super.getView(position, convertView, parent);
+                textView.setTextSize(10);
+                return textView;
+            }
+        };
+        mSubConsole.setAdapter(mSubConsoleAdapter);
+
+
         mRequestManager = getRequestManager();
 
     }
 
     @Override
     protected void initListeners() {
+        //一键清除主console
+        onClick(R.id.main_iv_renew_main_console, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearMainConsole();
+            }
+        });
+
+        //一键清除次console
+        onClick(R.id.main_iv_renew_sub_console, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearSubConsole();
+            }
+        });
+
+        //切换主console显示格式
+        onClick(R.id.main_iv_swap_main_console_format, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainConsoleAdapter.setToHex(!mMainConsoleAdapter.isToHex());
+            }
+        });
+
+        //切换次console显示格式
+        onClick(R.id.main_iv_swap_sub_console_format, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSubConsoleAdapter.setToHex(!mSubConsoleAdapter.isToHex());
+            }
+        });
+
+
+
         //---------------------------------------------------------------------测试发送-----------------------------------------------------------------//
         //测试连接
         onClick(R.id.btn_test_connection, new View.OnClickListener() {
@@ -599,31 +651,55 @@ public class MainActivity extends BaseActivity {
     @Override
     public synchronized void sendRequest(byte[] request, int start, int len) {
         super.sendRequest(request, start, len);
-//        updateConsole("发送命令："+new String(request,start,len));
+        byte[] temp=new byte[len];
+        System.arraycopy(request,start,temp,0,len);
+        updateSubConsole(new ConsoleItem(temp, ConsoleItemType.ITEM_TYPE_REQUEST));
     }
 
     @Override
     protected void onGetBizData(byte[] bizData) {
-        updateConsole(new String(bizData));
+        updateMainConsole(new ConsoleItem(bizData.clone(),ConsoleItemType.ITEM_TYPE_RESULT));
     }
 
 
     @Override
     public void onReceivePortData(final byte[] buffer, final int len) {
         super.onReceivePortData(buffer,len);
-//        updateConsole("收到应答："+new String(buffer,0,len).trim());
+        byte[] temp=new byte[len];
+        System.arraycopy(buffer,0,temp,0,len);
+        updateSubConsole(new ConsoleItem(temp,ConsoleItemType.ITEM_TYPE_ACK));
     }
 
-    private void updateConsole(final String msg) {
+    private void updateMainConsole(String msg) {
+        updateMainConsole(new ConsoleItem(msg.getBytes(),ConsoleItemType.ITEM_TYPE_RESULT));
+    }
+
+    private void updateMainConsole(final ConsoleItem consoleItem) {
         BaseApplication.post(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mConsoleContents.add(msg);
-                        mConsoleAdapter.notifyDataSetChanged();
-                        mConsole.smoothScrollToPosition(mConsoleContents.size()-1);
+                        mMainConsoleContents.add(consoleItem);
+                        mMainConsoleAdapter.notifyDataSetChanged();
+                        mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                    }
+                });
+            }
+        });
+    }
+
+    private void updateSubConsole(final ConsoleItem consoleItem) {
+        BaseApplication.post(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSubConsoleContents.add(consoleItem);
+                        mSubConsoleAdapter.notifyDataSetChanged();
+                        mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
                     }
                 });
             }
@@ -633,14 +709,21 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected View setSnackBarAnchorView() {
-        return mConsole;
+        return mMainConsole;
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_enable_save);
+        if(isKeepRecord){
+            menuItem.setIcon(R.drawable.ic_save_white_36dp);
+        }else {
+            menuItem.setIcon(R.drawable.ic_save_grey_36dp);
+        }
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -651,16 +734,23 @@ public class MainActivity extends BaseActivity {
             case android.R.id.home:
                 confirmBackPress();
                 break;
-            case R.id.menu_clear_console:
-                clearConsole();
+            case R.id.menu_enable_save:
+                isKeepRecord=!isKeepRecord;
+                supportInvalidateOptionsMenu();
+                break;
             default:
                 break;
         }
         return true;
     }
 
-    private void clearConsole() {
-        mConsoleContents.clear();
-        mConsoleAdapter.notifyDataSetChanged();
+    private void clearMainConsole() {
+        mMainConsoleContents.clear();
+        mMainConsoleAdapter.notifyDataSetChanged();
+    }
+
+    private void clearSubConsole() {
+        mSubConsoleContents.clear();
+        mSubConsoleAdapter.notifyDataSetChanged();
     }
 }
