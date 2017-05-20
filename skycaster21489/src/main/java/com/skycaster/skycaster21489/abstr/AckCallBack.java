@@ -1,6 +1,11 @@
 package com.skycaster.skycaster21489.abstr;
 
+import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
+import com.skycaster.skycaster21489.utils.LogUtils;
+import com.skycaster.skycaster21489.utils.WriteFileUtil;
+
+import java.util.Date;
 
 /**
  * 对应ADSP的各种应答的回调类，可根据实际情况覆写里面各种回调函数。
@@ -9,7 +14,16 @@ import com.skycaster.skycaster21489.utils.AdspRequestManager;
 public abstract class AckCallBack {
 
     private static int upgradePacketIndex;
+    private AdspActivity mActivity;
 
+    public AckCallBack(AdspActivity activity) {
+        mActivity = activity;
+    }
+
+    /**
+     * 该方法可以动态初始化升级包序号，专供SDK其它内部程序调用。此方法非常危险，开发者尽可能不要调用此方法，否则将可能导致设备不能运行。
+     * @param upgradePacketIndex 升级包序号
+     */
     public static void setUpgradePacketIndex(int upgradePacketIndex) {
         AckCallBack.upgradePacketIndex = upgradePacketIndex;
     }
@@ -50,6 +64,9 @@ public abstract class AckCallBack {
     public void startReceivingData(boolean isSuccess, String info) {
         if(isSuccess){
             AdspRequestManager.setIsReceivingBizData(true);
+            if(mActivity.isSaveBizData()){
+                WriteFileUtil.prepareFile(new Date(),mActivity);
+            }
         }
 
     }
@@ -62,6 +79,9 @@ public abstract class AckCallBack {
     public void stopReceivingData(boolean isSuccess, String info) {
         if(isSuccess){
             AdspRequestManager.setIsReceivingBizData(false);
+            if(mActivity.isSaveBizData()){
+                WriteFileUtil.stopWritingFiles();
+            }
         }
     }
 
@@ -229,17 +249,20 @@ public abstract class AckCallBack {
      * @param packageIndex 当前升级包序号
      */
     public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
+        LogUtils.showLog("升级包接收成功："+isSuccess+",包序号："+packageIndex);
         if(isSuccess){
             Integer index = Integer.valueOf(packageIndex);
             if(index==AdspRequestManager.TOTAL_PACKET_COUNT){
                 AdspRequestManager.setIsUpgrading(false,true,"升级成功！");
             }else {
-                if(upgradePacketIndex==index-1){
+                if(upgradePacketIndex==index){
+                    LogUtils.showLog("升级包序号连续，准备接收下一包...");
                     //如果升级包序号是连续的，则正常下一步
                     upgradePacketIndex++;
                 }else {
                     //如果升级包序号不是连续的，则跳出升级，返回失败信息。
-                    AdspRequestManager.setIsUpgrading(false,false,"升级包序号不连续，推测是掉包导致升级失败！");
+                    LogUtils.showLog("升级包序号不连续，升级失败！");
+                    AdspRequestManager.setIsUpgrading(false,false,"升级包序号不连续，升级失败！");
                 }
             }
         }

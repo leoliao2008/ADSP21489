@@ -22,27 +22,32 @@ public class AdspAckDecipher {
     }
 
 
-    public void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
+    public synchronized void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
         for(int i=0;i<len;i++){
-//            showLog("------receive byte:"+String.valueOf((char)buffer[i]));
-//            showLog("------receive byte in int form:"+Integer.valueOf(buffer[i]));
+            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
             if(!isAckConfirmed){
+                showLog("state:not confirmed");
                 if(buffer[i]=='+'){
                     isAckConfirmed=true;
                     index=0;
-//                    showLog("------ack confirmed");
+                    showLog("------ack confirmed");
                 }else if(AdspRequestManager.isReceivingBizData()){
                     mActivity.onReceiveBizDataByte(buffer[i]);
+                }else {
+                    showLog("byte does not belong to an ack or bizData.");
                 }
             }else {
-//                showLog("current byte in int form:"+buffer[i]);
-                if(buffer[i]=='\n'&&buffer[i-1]=='\r'){
-//                    showLog("------begin to decipher");
+                showLog("state: confirmed");
+                if(buffer[i]=='\n'&&index>0&&temp[index-1]=='\r'){
+                    showLog("------begin to decipher");
                     temp[index]=buffer[i];
                     decipher(temp,index, ackCallBack);
                     isAckConfirmed=false;
+                }else if(buffer[i]=='+'){
+                    index=0;
+                    showLog("------'+' happens again...buffer index return to default.");
                 }else {
-//                    showLog("------filling buffer");
+                    showLog("------fill the byte into buffer");
                     temp[index]=buffer[i];
                     if(index<255){
                         index++;
@@ -365,6 +370,7 @@ public class AdspAckDecipher {
                 ackCallBack.onError("数据格式不符合协议，解析失败。");
                 break;
         }
+        showLog("decipher ends");
     }
 
     private void showLog(String msg){

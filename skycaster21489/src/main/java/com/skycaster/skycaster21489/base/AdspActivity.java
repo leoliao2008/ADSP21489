@@ -17,6 +17,8 @@ import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.utils.AdspAckDecipher;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 import com.skycaster.skycaster21489.utils.AlertDialogUtils;
+import com.skycaster.skycaster21489.utils.LogUtils;
+import com.skycaster.skycaster21489.utils.WriteFileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,11 +32,12 @@ import project.SerialPort.SerialPort;
  */
 
 public abstract class AdspActivity extends AppCompatActivity {
-    protected static final String BAUD_RATE = "baud_rate";
-    protected static final String SERIAL_PORT_PATH = "serial_port_path";
-    protected static final String FREQ = "frequency";
-    protected static final String LEFT_TUNE = "left_tune";
-    protected static final String RIGHT_TUNE = "right_tune";
+    private static final String BAUD_RATE = "baud_rate";
+    private static final String SERIAL_PORT_PATH = "serial_port_path";
+    private static final String FREQ = "frequency";
+    private static final String LEFT_TUNE = "left_tune";
+    private static final String RIGHT_TUNE = "right_tune";
+    private static final String ENABLE_SAVE_BIZ_DATA="is_save_business_data";
     private static final int REQUEST_PERMISSIONS = 911;
     private static final int BIZ_DATA_LEN=10;
     protected SerialPort mSerialPort;
@@ -50,11 +53,12 @@ public abstract class AdspActivity extends AppCompatActivity {
     private byte[] mAckContainer =new byte[512];
     private AdspAckDecipher mAdspAckDecipher;
     private AckCallBack mAckCallBack;
-    private static final String[] PERMISSIONS=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+    private static final String[] PERMISSIONS=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private AdspRequestManager mRequestManager;
     private byte[] bizData=new byte[BIZ_DATA_LEN];
     private int bizDataIndex =0;
     private Handler mHandler;
+    private boolean isSaveBizData;
 
     /**
      * 获得AdspRequestManager实例。AdspRequestManager已在AdspActivity的onCreate()方法中被初始化，可以通过这个
@@ -71,6 +75,29 @@ public abstract class AdspActivity extends AppCompatActivity {
      */
     public int getBaudRate() {
         return mBaudRate;
+    }
+
+    /**
+     * 判断当前是否设置了保存业务数据。
+     * @return 如果返回true,每次启动业务数据后，程序都会尝试在SD卡DownLoad文件夹里面建立一个以启动时间为索引的text文档，记录接收到的业务数据。
+     *
+     */
+    public boolean isSaveBizData() {
+        return isSaveBizData;
+    }
+
+    /**
+     * 设置是否保存业务数据
+     * @param isSaveBizData
+     */
+    public void setIsSaveBizData(boolean isSaveBizData) {
+        if(!AdspRequestManager.isReceivingBizData()){
+            this.isSaveBizData = isSaveBizData;
+            mSharedPreferences.edit().putBoolean(ENABLE_SAVE_BIZ_DATA,isSaveBizData).apply();
+        }else {
+            showHint("业务数据正在传输中，设置无效。");
+        }
+
     }
 
     /**
@@ -91,6 +118,7 @@ public abstract class AdspActivity extends AppCompatActivity {
         mFreq=mSharedPreferences.getInt(FREQ,10510);
         mLeftTune=mSharedPreferences.getInt(LEFT_TUNE,46);
         mRightTune=mSharedPreferences.getInt(RIGHT_TUNE,60);
+        isSaveBizData=mSharedPreferences.getBoolean(ENABLE_SAVE_BIZ_DATA,false);
         if(!TextUtils.isEmpty(mSerialPortPath)){
             openSerialPort(mSerialPortPath,mBaudRate);
         }
@@ -108,7 +136,7 @@ public abstract class AdspActivity extends AppCompatActivity {
         if (!isPortOpen){
             showHint("串口参数设置错误，请更改串口路径及波特率重试");
         }
-        mRequestManager.testBaudRates();
+//        mRequestManager.testBaudRates();
     }
 
     /**
@@ -146,7 +174,7 @@ public abstract class AdspActivity extends AppCompatActivity {
         try {
             mSerialPort=new SerialPort(new File(serialPortPath),baudRate,0);
         } catch (SecurityException e) {
-            showHint("串口设置失败,串口路径："+mSerialPortPath+" ,波特率："+mBaudRate+",原因："+e.getMessage());
+            showHint("串口设置失败,串口路径："+mSerialPortPath+" ,波特率："+mBaudRate+",原因：没有打开该串口的权限。");
         } catch (IOException e) {
             showHint("串口设置失败,串口路径："+mSerialPortPath+" ,波特率："+mBaudRate+",原因："+e.getMessage());
         }
@@ -242,13 +270,16 @@ public abstract class AdspActivity extends AppCompatActivity {
      * 串口被打开后，将通过此方法开启一个子线程，启动串口通信。
      */
     private synchronized void startListeningInputStream() {
+        LogUtils.showLog("startListeningInputStream");
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isPortOpen){
                     try {
                         final int len = mInputStream.read(mAckContainer);
-                        onReceivePortData(mAckContainer.clone(),len);
+                        if(len>0){
+                            onReceivePortData(mAckContainer.clone(),len);
+                        }
                     } catch (IOException e) {
                         showHint(e.toString());
                     }
@@ -265,6 +296,7 @@ public abstract class AdspActivity extends AppCompatActivity {
      */
     public void onReceivePortData(byte[] buffer, int len){
         mAdspAckDecipher.onReceiveDate(buffer,len, mAckCallBack);
+
     }
 
     /**
@@ -414,6 +446,9 @@ public abstract class AdspActivity extends AppCompatActivity {
      * @param bizByte 单个字节的业务数据
      */
     public void onReceiveBizDataByte(byte bizByte){
+        if(isSaveBizData){
+            WriteFileUtil.writeBizFile(bizByte);
+        }
         bizData[bizDataIndex]=bizByte;
         bizDataIndex++;
         if(bizDataIndex==BIZ_DATA_LEN){

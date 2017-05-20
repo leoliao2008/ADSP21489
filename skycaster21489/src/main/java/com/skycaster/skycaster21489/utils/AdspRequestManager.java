@@ -366,7 +366,7 @@ public class AdspRequestManager {
                 String prefix="AT+UDDA:"+ TOTAL_PACKET_COUNT +",";
                 int readCount;
                 int currentPacketIndex=1;
-                AckCallBack.setUpgradePacketIndex(currentPacketIndex);
+                AckCallBack.setUpgradePacketIndex(currentPacketIndex);//升级包序号从1开始
                 try {
                     FileInputStream in=new FileInputStream(mUpgradeFile);
                     while (isUpgrading&&((readCount=in.read(middlePart))!=-1)){

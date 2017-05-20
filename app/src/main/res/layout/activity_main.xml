@@ -51,14 +51,14 @@
 
                 <ImageView
                     android:id="@+id/main_iv_swap_main_console_format"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/selector_ic_swap_format"/>
 
                 <ImageView
                     android:id="@+id/main_iv_renew_main_console"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/selector_ic_renew_24dp"/>
 
             </LinearLayout>
@@ -93,14 +93,14 @@
 
                 <ImageView
                     android:id="@+id/main_iv_swap_sub_console_format"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/selector_ic_swap_format"/>
 
                 <ImageView
                     android:id="@+id/main_iv_renew_sub_console"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/selector_ic_renew_24dp"/>
 
             </LinearLayout>

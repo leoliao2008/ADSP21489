@@ -39,14 +39,13 @@ public class MainActivity extends BaseActivity {
     private ListView mSubConsole;
     private ArrayList<ConsoleItem> mSubConsoleContents=new ArrayList<>();
     private ConsoleAdapter mSubConsoleAdapter;
-    private boolean isKeepRecord;
 
 
 
     @NonNull
     @Override
     protected AckCallBack setSerialPortAckCallBack() {
-        return new AckCallBack() {
+        return new AckCallBack(this) {
             @Override
             public void onError(final String msg) {
                 updateMainConsole(msg);
@@ -716,7 +715,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
         MenuItem menuItem = menu.findItem(R.id.menu_enable_save);
-        if(isKeepRecord){
+        if(isSaveBizData()){
             menuItem.setIcon(R.drawable.ic_save_white_36dp);
         }else {
             menuItem.setIcon(R.drawable.ic_save_grey_36dp);
@@ -735,7 +734,7 @@ public class MainActivity extends BaseActivity {
                 confirmBackPress();
                 break;
             case R.id.menu_enable_save:
-                isKeepRecord=!isKeepRecord;
+                setIsSaveBizData(!isSaveBizData());
                 supportInvalidateOptionsMenu();
                 break;
             default:

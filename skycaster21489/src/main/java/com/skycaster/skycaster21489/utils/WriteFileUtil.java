@@ -1,5 +1,6 @@
-package com.skycaster.adsp21489.util;
+package com.skycaster.skycaster21489.utils;
 
+import android.content.Context;
 import android.os.Environment;
 
 import java.io.BufferedOutputStream;
@@ -10,8 +11,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static com.skycaster.adsp21489.base.BaseApplication.getGlobalContext;
-
 
 /**
  * Created by 廖华凯 on 2017/1/9.
@@ -21,8 +20,8 @@ public class WriteFileUtil {
     private static File bizFile;
     private static BufferedOutputStream bizFileBos;
 
-    public static synchronized boolean prepareFile(Date startData){
-        generateFile(generateDir(startData),startData);
+    public static synchronized boolean prepareFile(Date currentDate,Context context){
+        generateFile(generateDir(currentDate,context),currentDate);
         return bizFileBos!=null;
     }
 
@@ -31,6 +30,15 @@ public class WriteFileUtil {
         try {
             bizFileBos.write(data);
             bizFileBos.write("\r\n".getBytes());
+            bizFileBos.flush();
+        } catch (IOException e) {
+            LogUtils.showLog(e.getMessage());
+        }
+    }
+
+    public static void writeBizFile(byte data){
+        try {
+            bizFileBos.write(data);
             bizFileBos.flush();
         } catch (IOException e) {
             LogUtils.showLog(e.getMessage());
@@ -52,9 +60,9 @@ public class WriteFileUtil {
         }
     }
 
-    private static synchronized File generateDir(Date date){
+    private static synchronized File generateDir(Date date, Context context){
         File dir=null;
-        String dirPath="/"+ getGlobalContext().getPackageName()+"/"+new SimpleDateFormat("yyyyMMdd").format(date);
+        String dirPath="/"+ context.getPackageName()+"/"+new SimpleDateFormat("yyyyMMdd").format(date);
         if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
             if(Environment.getExternalStorageDirectory().getFreeSpace()> MINIMUM_SPACE){
                 dir=new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+dirPath);
