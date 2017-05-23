@@ -1,6 +1,7 @@
 package com.skycaster.skycaster21489.abstr;
 
 import com.skycaster.skycaster21489.base.AdspActivity;
+import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 import com.skycaster.skycaster21489.utils.LogUtils;
 import com.skycaster.skycaster21489.utils.WriteFileUtil;
@@ -57,28 +58,26 @@ public abstract class AckCallBack {
     public void hibernate(boolean isSuccess,String info) {}
 
     /**
-     * 返回当前ADSP是否已经成功进入接收业务数据状态。
+     * 返回当前ADSP是否已经成功进入工作状态。
      * @param isSuccess 表示请求是否被成功执行。
      * @param info 提示信息。
      */
-    public void startReceivingData(boolean isSuccess, String info) {
+    public void activate(boolean isSuccess, String info) {
         if(isSuccess){
-            AdspRequestManager.setIsReceivingBizData(true);
-            if(mActivity.isSaveBizData()){
-                WriteFileUtil.prepareFile(new Date(),mActivity);
-            }
+            AdspRequestManager.setIsDeviceActivated(true);
         }
 
     }
 
     /**
-     * 返回当前ADSP是否已经成功进入停止接收业务数据状态。
+     * 返回当前ADSP是否已经成功进入停止工作状态。
      * @param isSuccess 表示请求是否被成功执行。
      * @param info 提示信息。
      */
-    public void stopReceivingData(boolean isSuccess, String info) {
+    public void inactivate(boolean isSuccess, String info) {
         if(isSuccess){
-            AdspRequestManager.setIsReceivingBizData(false);
+            AdspRequestManager.setIsDeviceActivated(false);
+            AdspRequestManager.setIsReceivingRawData(false);
             if(mActivity.isSaveBizData()){
                 WriteFileUtil.stopWritingFiles();
             }
@@ -249,7 +248,7 @@ public abstract class AckCallBack {
      * @param packageIndex 当前升级包序号
      */
     public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
-        LogUtils.showLog("升级包接收成功："+isSuccess+",包序号："+packageIndex);
+        LogUtils.showLog("升级包接收成功："+isSuccess+"，总包数："+AdspRequestManager.TOTAL_PACKET_COUNT+",当前包序号："+packageIndex);
         if(isSuccess){
             Integer index = Integer.valueOf(packageIndex);
             if(index==AdspRequestManager.TOTAL_PACKET_COUNT){
@@ -296,5 +295,27 @@ public abstract class AckCallBack {
      */
     public void checkTaskList(boolean isSuccess, String[] taskCodes,String info) {
 
+    }
+
+    /**
+     * 发起启动特定的业务后，接收机返回的回调
+     * @param isSuccess 是否启动成功
+     * @param serviceCode 拟发起启动的业务
+     */
+    public void startService(boolean isSuccess, ServiceCode serviceCode) {
+        if(isSuccess){
+            switch (serviceCode){
+                case RAW_DATA:
+                    LogUtils.showLog("raw data begin...");
+                    AdspRequestManager.setIsReceivingRawData(true);
+                    if(mActivity.isSaveBizData()){
+                        WriteFileUtil.prepareFile(new Date(),mActivity);
+                    }
+                    break;
+                case ALL:
+                    //todo
+                    break;
+            }
+        }
     }
 }

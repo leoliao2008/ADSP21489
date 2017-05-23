@@ -18,7 +18,6 @@ import com.skycaster.skycaster21489.utils.AdspAckDecipher;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 import com.skycaster.skycaster21489.utils.AlertDialogUtils;
 import com.skycaster.skycaster21489.utils.LogUtils;
-import com.skycaster.skycaster21489.utils.WriteFileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,7 +90,7 @@ public abstract class AdspActivity extends AppCompatActivity {
      * @param isSaveBizData
      */
     public void setIsSaveBizData(boolean isSaveBizData) {
-        if(!AdspRequestManager.isReceivingBizData()){
+        if(!AdspRequestManager.isReceivingRawData()){
             this.isSaveBizData = isSaveBizData;
             mSharedPreferences.edit().putBoolean(ENABLE_SAVE_BIZ_DATA,isSaveBizData).apply();
         }else {
@@ -284,10 +283,34 @@ public abstract class AdspActivity extends AppCompatActivity {
                         showHint(e.toString());
                     }
                 }
+//                //尝试解决掉包的问题。
+//                while (isPortOpen){
+//                    try {
+//                        int b = mInputStream.read();
+//                        if(b>0){
+//                            onReceivePortData((byte) b);
+//                        }
+//                        try {
+//                            Thread.sleep(10);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
             }
         }).start();
         showHint("串口设置成功,当前串口："+mSerialPortPath+" ,波特率："+mBaudRate+"。");
     }
+
+//    /**
+//     * 尝试解决掉包的问题。
+//     * @param data
+//     */
+//    protected  void onReceivePortData(byte data){
+//        mAdspAckDecipher.onReceiveDate(new byte[]{data},1,mAckCallBack);
+//    }
 
     /**
      * 根据协议，解析串口通讯数据。
@@ -296,7 +319,6 @@ public abstract class AdspActivity extends AppCompatActivity {
      */
     public void onReceivePortData(byte[] buffer, int len){
         mAdspAckDecipher.onReceiveDate(buffer,len, mAckCallBack);
-
     }
 
     /**
@@ -346,6 +368,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         closeSerialPort();
+        mRequestManager.setIsUpgrading(false,false,"程序退出。");
 
     }
 
@@ -441,27 +464,30 @@ public abstract class AdspActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * 发起业务数据后，接收到业务数据后的回调。仅供特定内部函数调用，不建议开发者直接调用此方法。
-     * @param bizByte 单个字节的业务数据
-     */
-    public void onReceiveBizDataByte(byte bizByte){
-        if(isSaveBizData){
-            WriteFileUtil.writeBizFile(bizByte);
-        }
-        bizData[bizDataIndex]=bizByte;
-        bizDataIndex++;
-        if(bizDataIndex==BIZ_DATA_LEN){
-            bizDataIndex=0;
-            onGetBizData(bizData.clone());
-        }
-    }
+//    /**
+//     * 发起业务数据后，接收到业务数据后的回调。仅供特定内部函数调用，不建议开发者直接调用此方法。
+//     * @param bizByte 单个字节的业务数据
+//     */
+//    public void onReceiveBizDataByte(byte bizByte){
+//        if(isSaveBizData){
+//            WriteFileUtil.writeBizFile(bizByte);
+//        }
+//        bizData[bizDataIndex]=bizByte;
+//        bizDataIndex++;
+//        if(bizDataIndex==BIZ_DATA_LEN){
+//            bizDataIndex=0;
+//            onGetBizData(bizData.clone());
+//        }
+//    }
+
+
 
     /**
      * 将收集到的业务数据一次性返回给调用方。
      * @param bizData 业务数据
+     *
      */
-    protected abstract void onGetBizData(byte[] bizData);
+    public abstract void onGetBizData(byte[] bizData,int len);
 
     public void post(Runnable runnable){
         mHandler.post(runnable);

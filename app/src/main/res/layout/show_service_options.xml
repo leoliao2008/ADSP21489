@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorRiceWhite"
+    android:orientation="vertical">
+
+    <TextView
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="启动业务"
+        android:padding="@dimen/padding_button_text_large"
+        android:textSize="@dimen/text_size_title"
+        android:textColor="@color/colorWhite"
+        android:layout_margin="1dp"
+        android:background="@drawable/shape_navi_item"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="业务类型"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            style="@style/MyTextViewStyle"/>
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/start_service_layout_spin_options"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/start_service_layout_btn_confirm"
+            android:text="确定"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_config"
+            android:background="@drawable/shape_navi_item"
+            android:textColor="@color/selector_navi_text_color"
+            android:layout_margin="1dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/start_service_layout_btn_cancel"
+            android:text="取消"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_navi_item"
+            android:textSize="@dimen/text_size_config"
+            android:layout_margin="1dp"
+            android:textColor="@color/selector_navi_text_color"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+</LinearLayout>

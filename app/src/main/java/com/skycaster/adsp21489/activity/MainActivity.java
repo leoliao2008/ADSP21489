@@ -21,11 +21,13 @@ import com.skycaster.adsp21489.bean.ConsoleItem;
 import com.skycaster.adsp21489.data.ConsoleItemType;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
+import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
@@ -39,6 +41,8 @@ public class MainActivity extends BaseActivity {
     private ListView mSubConsole;
     private ArrayList<ConsoleItem> mSubConsoleContents=new ArrayList<>();
     private ConsoleAdapter mSubConsoleAdapter;
+
+
 
 
 
@@ -64,14 +68,14 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void startReceivingData(boolean isSuccess, String info) {
-                super.startReceivingData(isSuccess, info);
+            public void activate(boolean isSuccess, String info) {
+                super.activate(isSuccess, info);
                 updateMainConsole(info);
             }
 
             @Override
-            public void stopReceivingData(boolean isSuccess, String info) {
-                super.stopReceivingData(isSuccess, info);
+            public void inactivate(boolean isSuccess, String info) {
+                super.inactivate(isSuccess, info);
                 updateMainConsole(info);
             }
 
@@ -214,6 +218,31 @@ public class MainActivity extends BaseActivity {
                 super.setDeviceId(isSuccess, info);
                 updateMainConsole(info);
             }
+
+            @Override
+            public void startService(boolean isSuccess, ServiceCode serviceCode) {
+                super.startService(isSuccess, serviceCode);
+                StringBuffer sb=new StringBuffer();
+                sb.append("启动业务");
+                if(isSuccess){
+                    sb.append("成功");
+                }else {
+                    sb.append("失败");
+                }
+                sb.append(",业务类型：");
+                switch (serviceCode){
+                    case RAW_DATA:
+                        sb.append("裸数据传输。");
+                        break;
+                    case ALL:
+                        sb.append("全部。");
+                        break;
+                    default:
+                        sb.append("未知业务类型。");
+                        break;
+                }
+                updateMainConsole(sb.toString());
+            }
         };
     }
 
@@ -253,6 +282,7 @@ public class MainActivity extends BaseActivity {
             }
         }
 
+
         //初始化main console
         mMainConsoleAdapter=new ConsoleAdapter(mMainConsoleContents,this){
             @Override
@@ -273,7 +303,6 @@ public class MainActivity extends BaseActivity {
             }
         };
         mSubConsole.setAdapter(mSubConsoleAdapter);
-
 
         mRequestManager = getRequestManager();
 
@@ -334,14 +363,14 @@ public class MainActivity extends BaseActivity {
         onClick(R.id.btn_start_adsp, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestManager.toggleReceivingData(true);
+                mRequestManager.activate(true);
             }
         });
         //接收机关
         onClick(R.id.btn_stop_adsp, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestManager.toggleReceivingData(false);
+                mRequestManager.activate(false);
             }
         });
         //查询软件版本
@@ -529,6 +558,13 @@ public class MainActivity extends BaseActivity {
                 });
             }
         });
+        //启动特定服务。
+        onClick(R.id.btn_start_service, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showServiceOptions(MainActivity.this);
+            }
+        });
 
         //---------------------------------------------------------------------模拟接收-------------------------------------------------------------------//
         //测试连接成功
@@ -656,17 +692,15 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onGetBizData(byte[] bizData) {
-        updateMainConsole(new ConsoleItem(bizData.clone(),ConsoleItemType.ITEM_TYPE_RESULT));
+    public void onGetBizData(byte[] bizData,int len) {
+        updateMainConsole(new ConsoleItem(Arrays.copyOf(bizData,len),ConsoleItemType.ITEM_TYPE_RESULT));
     }
 
 
     @Override
-    public void onReceivePortData(final byte[] buffer, final int len) {
+    public void onReceivePortData(byte[] buffer, final int len) {
         super.onReceivePortData(buffer,len);
-        byte[] temp=new byte[len];
-        System.arraycopy(buffer,0,temp,0,len);
-        updateSubConsole(new ConsoleItem(temp,ConsoleItemType.ITEM_TYPE_ACK));
+        updateSubConsole(new ConsoleItem(Arrays.copyOf(buffer,len),ConsoleItemType.ITEM_TYPE_ACK));
     }
 
     private void updateMainConsole(String msg) {

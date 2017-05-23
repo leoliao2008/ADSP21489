@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,6 +26,7 @@ import com.skycaster.adsp21489.activity.MainActivity;
 import com.skycaster.adsp21489.adapter.FilesBrowserAdapter;
 import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.data.AdspBaudRates;
+import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
 
@@ -43,6 +45,7 @@ public class AlertDialogUtil {
     private static int selectedBaudRate;
     private static int selectedBaudRateIndex;
     private static FilesBrowserAdapter filesBrowserAdapter;
+    private static ServiceCode mServiceCode;
 
     public static void showSerialPortSelection(final AdspActivity activity){
         if(activity instanceof MainActivity){
@@ -304,6 +307,54 @@ public class AlertDialogUtil {
         //config dialog view
         mAlertDialog.setContentView(rootView);
         mAlertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+    }
+
+    public static void showServiceOptions(final AdspActivity context) {
+        //init view
+        View rootView=LayoutInflater.from(context).inflate(R.layout.show_service_options,null);
+        AppCompatSpinner spinner= (AppCompatSpinner) rootView.findViewById(R.id.start_service_layout_spin_options);
+        Button btn_confirm= (Button) rootView.findViewById(R.id.start_service_layout_btn_confirm);
+        Button btn_cancel= (Button) rootView.findViewById(R.id.start_service_layout_btn_cancel);
+
+        //init data
+        String[] descriptions = ServiceCode.getValueDescriptions();
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(context,android.R.layout.simple_spinner_item,descriptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        mServiceCode=null;
+        //init listener
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mServiceCode =ServiceCode.values()[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mServiceCode!=null){
+                    context.getRequestManager().startService(mServiceCode);
+                    mAlertDialog.dismiss();
+                }else {
+                    ToastUtil.showToast("业务类型为空。");
+                }
+            }
+        });
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAlertDialog.dismiss();
+            }
+        });
+        //set dialog view
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        mAlertDialog=builder.setView(rootView).create();
+        mAlertDialog.show();
     }
 
     public interface UpgradeFileSelectedListener{

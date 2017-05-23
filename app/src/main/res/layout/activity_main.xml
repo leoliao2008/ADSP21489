@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <com.skycaster.adsp21489.customized.HorizontalMovableListViewLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <include
         android:layout_width="0dp"
@@ -24,6 +23,7 @@
         layout="@layout/layout_main_right"/>
 
     <LinearLayout
+        android:id="@+id/main_coord_layout"
         android:layout_width="0dp"
         app:layout_widthPercent="75%"
         android:layout_height="match_parent"
@@ -31,6 +31,7 @@
         android:orientation="vertical">
 
         <android.support.v7.widget.CardView
+            android:id="@+id/main_main_console_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -69,7 +70,7 @@
             android:id="@+id/main_console"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="4"
+            android:layout_weight="3"
             android:background="@color/colorRiceWhite"
             />
 
@@ -105,18 +106,18 @@
 
             </LinearLayout>
 
-
         </android.support.v7.widget.CardView>
 
         <ListView
             android:id="@+id/sub_console"
             android:layout_height="0dp"
-            android:layout_weight="2"
             android:layout_width="match_parent"
+            android:layout_weight="1.5"
             android:background="@color/colorRiceWhite"
             />
+
     </LinearLayout>
 
-
-
 </com.skycaster.adsp21489.customized.HorizontalMovableListViewLayout>
+
+

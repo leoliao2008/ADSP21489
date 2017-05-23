@@ -44,6 +44,18 @@
                 android:text="开启接收机"/>
 
             <Button
+                android:id="@+id/btn_start_service"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="执行所有业务或特定业务"/>
+
+            <Button
+                android:id="@+id/btn_check_task_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="查询当前运行业务类型"/>
+
+            <Button
                 android:id="@+id/btn_stop_adsp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,11 +115,6 @@
                 android:layout_height="wrap_content"
                 android:text="查询tuner状态"/>
 
-            <Button
-                android:id="@+id/btn_check_task_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="查询接收到有哪些业务"/>
 
             <Button
                 android:id="@+id/btn_check_system_date"
@@ -180,12 +187,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="查询1PPS设置状态"/>
-
-            <Button
-                android:id="@+id/btn_begin_task"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="执行所有业务或特定业务"/>
 
             <Button
                 android:id="@+id/btn_prepare_upgrade"

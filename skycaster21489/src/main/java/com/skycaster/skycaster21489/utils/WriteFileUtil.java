@@ -27,9 +27,12 @@ public class WriteFileUtil {
 
 
     public static void writeBizFile(byte[] data){
+        writeBizFile(data,0,data.length);
+    }
+
+    public static void writeBizFile(byte[] data,int off,int len){
         try {
-            bizFileBos.write(data);
-            bizFileBos.write("\r\n".getBytes());
+            bizFileBos.write(data,off,len);
             bizFileBos.flush();
         } catch (IOException e) {
             LogUtils.showLog(e.getMessage());

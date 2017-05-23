@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.data.AdspBaudRates;
+import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Check1PpsConfig;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckCfo;
@@ -37,9 +39,10 @@ import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.SetDeviceId;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.SetFreq;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.SetTunes;
+import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.StartService;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Toggle1Pps;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.ToggleCkfo;
-import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.ToggleReceivingData;
+import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Activate;
 
 
 /**
@@ -54,15 +57,27 @@ public class AdspRequestManager {
     private static File mUpgradeFile;
     public static int TOTAL_PACKET_COUNT;
     private static boolean isUpgrading=false;
-    private static boolean isReceivingBizData=false;
+    private static boolean isReceivingRawData =false;
     private static boolean isHoldingUpgradePackets =false;
     private static boolean isTestingBaudRate=false;
     private static boolean isBaudRateSynchronize=false;
+    /**
+     * 表示当前ADSP是否已经准备好启动各项业务。
+     */
+    private static boolean isDeviceActivated =false;
     /**
      * 盛装系统指定的波特率种类的容器
      */
     private static int[] BAUD_RATES;
 
+
+    public static boolean isDeviceActivated() {
+        return isDeviceActivated;
+    }
+
+    public static void setIsDeviceActivated(boolean isDeviceActivated) {
+        AdspRequestManager.isDeviceActivated = isDeviceActivated;
+    }
 
     public static boolean isTestingBaudRate() {
         return isTestingBaudRate;
@@ -80,12 +95,12 @@ public class AdspRequestManager {
         AdspRequestManager.isHoldingUpgradePackets = isHoldingUpgradePackets;
     }
 
-    public static boolean isReceivingBizData() {
-        return isReceivingBizData;
+    public static boolean isReceivingRawData() {
+        return isReceivingRawData;
     }
 
-    public static void setIsReceivingBizData(boolean isReceivingBizData) {
-        AdspRequestManager.isReceivingBizData = isReceivingBizData;
+    public static void setIsReceivingRawData(boolean isReceivingRawData) {
+        AdspRequestManager.isReceivingRawData = isReceivingRawData;
     }
 
     /**
@@ -139,12 +154,12 @@ public class AdspRequestManager {
     }
 
     /**
-     * 启动/关闭ADSP接收业务数据。
-     * @param isToTurnOn true为开始，false为停止。
+     * 启动/关闭ADSP。
+     * @param isToTurnOn true为启动，false为关闭。
      */
-    public void toggleReceivingData(boolean isToTurnOn){
+    public void activate(boolean isToTurnOn){
         if(isToTurnOn){
-            sendRequest(formRequest(ToggleReceivingData,"OPEN"));
+            sendRequest(formRequest(Activate,"OPEN"));
         }else {
 //            //跳过sendRequest方法，这样可以避免由于正在接收业务数据而拒绝执行此命令。
 //            byte[] bytes = "AT+RECVOP=CLOSE\r\n".getBytes();
@@ -157,7 +172,7 @@ public class AdspRequestManager {
 //            }else {
 //                mContext.showHint("串口未打开，请先打开串口。");
 //            }
-            sendRequest(formRequest(ToggleReceivingData,"CLOSE"));
+            sendRequest(formRequest(Activate,"CLOSE"));
         }
     }
 
@@ -332,14 +347,7 @@ public class AdspRequestManager {
                     return;
                 }
                 StringBuffer sb=new StringBuffer();
-                String hexString = Integer.toHexString(code&0xff);
-                hexString=hexString.toUpperCase();
-                if(hexString.length()<2){
-                    sb.append("0x0");
-                }else {
-                    sb.append("0x");
-                }
-                sb.append(hexString).append(",").append(String.valueOf(upgradeFile.length()));
+                sb.append(code).append(",").append(String.valueOf(upgradeFile.length()));
                 mUpgradeFile=upgradeFile;
                 sendRequest(formRequest(PrepareUpgrade,sb.toString()));
             }
@@ -366,25 +374,32 @@ public class AdspRequestManager {
                 String prefix="AT+UDDA:"+ TOTAL_PACKET_COUNT +",";
                 int readCount;
                 int currentPacketIndex=1;
+                //临时增加，待删除
+                int temp=0;
                 AckCallBack.setUpgradePacketIndex(currentPacketIndex);//升级包序号从1开始
                 try {
                     FileInputStream in=new FileInputStream(mUpgradeFile);
+                    //待删除,否则和记录业务信息功能相冲突。
+                    WriteFileUtil.prepareFile(new Date(),mContext);
                     while (isUpgrading&&((readCount=in.read(middlePart))!=-1)){
+                        temp=temp+readCount;
+                        LogUtils.showLog("------------------------------upgrade file uploaded len= "+temp);
                         byte[] firstPart = (prefix + currentPacketIndex+",").getBytes();
                         byte[] fullPart=new byte[firstPart.length+middlePart.length+finalPart.length];
                         for(int i=0;i<fullPart.length;i++){
                             fullPart[i]=(byte) 0xff;//初始化默认值
                         }
-
                         System.arraycopy(firstPart,0,fullPart,0,firstPart.length);
                         System.arraycopy(middlePart,0,fullPart,firstPart.length,readCount);
                         System.arraycopy(finalPart,0,fullPart,firstPart.length+UPGRADE_PACKET_DATA_LENGTH,finalPart.length);
                         mContext.sendRequest(fullPart,0,fullPart.length);
+                        WriteFileUtil.writeBizFile(fullPart,firstPart.length,readCount);
                         currentPacketIndex++;
                         //等待AckCallBack的onReceiveUpgradePackage（）回调判断升级包确实被收到后，才能发送下一个升级包。
                         isHoldingUpgradePackets =true;
-                        while (isHoldingUpgradePackets){}
+                        while (isHoldingUpgradePackets&&mContext.isPortOpen()){}
                     }
+                    WriteFileUtil.stopWritingFiles();
                     in.close();
                 } catch (IOException e) {
                     mContext.showHint(e.toString());
@@ -448,6 +463,19 @@ public class AdspRequestManager {
         }
     }
 
+    /**
+     * 启动特定业务
+     * @param serviceCode 业务代号，详情请参考说明文档。
+     */
+    public void startService(ServiceCode serviceCode){
+        if(isDeviceActivated){
+            sendRequest(formRequest(StartService, serviceCode.toString()));
+        }else {
+            mContext.showHint("请先启动设备。");
+        }
+
+    }
+
 
 
     @NonNull
@@ -460,7 +488,7 @@ public class AdspRequestManager {
             case Hibernate:
                 sb.append("+HBNT");
                 break;
-            case ToggleReceivingData:
+            case Activate:
                 sb.append("+RECVOP=");
                 break;
             case CheckSoftwareVersion:
@@ -505,8 +533,9 @@ public class AdspRequestManager {
             case Toggle1Pps:
                 sb.append("+1PPS=");
                 break;
-            case StartTask:
-                //未定好
+            case StartService:
+                //未完全定义好
+                sb.append("+SERV:");
                 break;
             case PrepareUpgrade:
                 sb.append("+STUD:");
@@ -552,7 +581,7 @@ public class AdspRequestManager {
         if(checkIfUpgrading()){
             return;
         }
-//        if(isReceivingBizData){
+//        if(isReceivingRawData){
 //            mContext.showHint("正在接收业务数据，请先停止业务数据。");
 //            return;
 //        }
@@ -582,6 +611,14 @@ public class AdspRequestManager {
         }
     }
 
+    /**
+     * 动态查询系统是否正在升级。
+     * @return 是否正在升级系统。
+     */
+    public static boolean isUpgrading() {
+        return isUpgrading;
+    }
+
     private static boolean checkIfUpgrading(){
         if(isUpgrading){
             mContext.showHint("正在升级，请升级完毕后再操作......");
@@ -594,10 +631,10 @@ public class AdspRequestManager {
      * 枚举函数，内含所有ADSP命令代码，作为方法的参数，在AdspRequestManager中使用。
      */
     enum RequestType {
-        CheckConnectStatus, Hibernate, ToggleReceivingData,
+        CheckConnectStatus, Hibernate, Activate,
         CheckSoftwareVersion, CheckDeviceId,CheckSnrRate,CheckSnrStatus,
         CheckSfo,CheckCfo,CheckTunerStatus,CheckTaskList,CheckSystemDate,
-        ToggleCkfo,SetBaudRate,SetFreq,SetTunes,Toggle1Pps,Check1PpsConfig,StartTask,
+        ToggleCkfo,SetBaudRate,SetFreq,SetTunes,Toggle1Pps,Check1PpsConfig, StartService,
         PrepareUpgrade, CheckCkfoSetting, CheckFreq, CheckTunes,CheckIfReceivingData,
         SetDeviceId
     }
