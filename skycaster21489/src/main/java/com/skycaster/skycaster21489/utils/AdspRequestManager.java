@@ -16,8 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Date;
 
+import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Activate;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Check1PpsConfig;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckCfo;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckCkfoSetting;
@@ -42,7 +42,6 @@ import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.StartService;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Toggle1Pps;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.ToggleCkfo;
-import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.Activate;
 
 
 /**
@@ -374,16 +373,10 @@ public class AdspRequestManager {
                 String prefix="AT+UDDA:"+ TOTAL_PACKET_COUNT +",";
                 int readCount;
                 int currentPacketIndex=1;
-                //临时增加，待删除
-                int temp=0;
                 AckCallBack.setUpgradePacketIndex(currentPacketIndex);//升级包序号从1开始
                 try {
                     FileInputStream in=new FileInputStream(mUpgradeFile);
-                    //待删除,否则和记录业务信息功能相冲突。
-                    WriteFileUtil.prepareFile(new Date(),mContext);
                     while (isUpgrading&&((readCount=in.read(middlePart))!=-1)){
-                        temp=temp+readCount;
-                        LogUtils.showLog("------------------------------upgrade file uploaded len= "+temp);
                         byte[] firstPart = (prefix + currentPacketIndex+",").getBytes();
                         byte[] fullPart=new byte[firstPart.length+middlePart.length+finalPart.length];
                         for(int i=0;i<fullPart.length;i++){
@@ -393,13 +386,11 @@ public class AdspRequestManager {
                         System.arraycopy(middlePart,0,fullPart,firstPart.length,readCount);
                         System.arraycopy(finalPart,0,fullPart,firstPart.length+UPGRADE_PACKET_DATA_LENGTH,finalPart.length);
                         mContext.sendRequest(fullPart,0,fullPart.length);
-                        WriteFileUtil.writeBizFile(fullPart,firstPart.length,readCount);
                         currentPacketIndex++;
                         //等待AckCallBack的onReceiveUpgradePackage（）回调判断升级包确实被收到后，才能发送下一个升级包。
                         isHoldingUpgradePackets =true;
                         while (isHoldingUpgradePackets&&mContext.isPortOpen()){}
                     }
-                    WriteFileUtil.stopWritingFiles();
                     in.close();
                 } catch (IOException e) {
                     mContext.showHint(e.toString());

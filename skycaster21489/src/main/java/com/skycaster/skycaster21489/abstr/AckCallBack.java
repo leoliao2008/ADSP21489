@@ -248,19 +248,19 @@ public abstract class AckCallBack {
      * @param packageIndex 当前升级包序号
      */
     public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
-        LogUtils.showLog("升级包接收成功："+isSuccess+"，总包数："+AdspRequestManager.TOTAL_PACKET_COUNT+",当前包序号："+packageIndex);
+//        LogUtils.showLog("升级包接收成功："+isSuccess+"，总包数："+AdspRequestManager.TOTAL_PACKET_COUNT+",当前包序号："+packageIndex);
         if(isSuccess){
             Integer index = Integer.valueOf(packageIndex);
             if(index==AdspRequestManager.TOTAL_PACKET_COUNT){
                 AdspRequestManager.setIsUpgrading(false,true,"升级成功！");
             }else {
                 if(upgradePacketIndex==index){
-                    LogUtils.showLog("升级包序号连续，准备接收下一包...");
+//                    LogUtils.showLog("升级包序号连续，准备接收下一包...");
                     //如果升级包序号是连续的，则正常下一步
                     upgradePacketIndex++;
                 }else {
                     //如果升级包序号不是连续的，则跳出升级，返回失败信息。
-                    LogUtils.showLog("升级包序号不连续，升级失败！");
+//                    LogUtils.showLog("升级包序号不连续，升级失败！");
                     AdspRequestManager.setIsUpgrading(false,false,"升级包序号不连续，升级失败！");
                 }
             }

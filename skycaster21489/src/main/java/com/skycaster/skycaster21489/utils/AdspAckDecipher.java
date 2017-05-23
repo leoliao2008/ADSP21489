@@ -24,35 +24,35 @@ public class AdspAckDecipher {
 
 
     public synchronized void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
-        showLog("data len="+len);
+//        showLog("data len="+len);
         if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
             mActivity.onGetBizData(buffer,len);
         }
         for(int i=0;i<len;i++){
-            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
+//            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
             if(!isAckConfirmed){
-                showLog("state:not confirmed");
+//                showLog("state:not confirmed");
                 if(buffer[i]=='+'){
                     isAckConfirmed=true;
                     index=0;
-                    showLog("------ack confirmed");
+//                    showLog("------ack confirmed");
 //                }else if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
 //                    mActivity.onReceiveBizDataByte(buffer[i]);
                 }else {
-                    showLog("byte does not belong to an ack or bizData.");
+//                    showLog("byte does not belong to an ack or bizData.");
                 }
             }else {
-                showLog("state: confirmed");
+//                showLog("state: confirmed");
                 if(buffer[i]=='\n'&&index>0&&temp[index-1]=='\r'){
-                    showLog("------begin to decipher");
+//                    showLog("------begin to decipher");
                     temp[index]=buffer[i];
                     decipher(temp,index, ackCallBack);
                     isAckConfirmed=false;
                 }else if(buffer[i]=='+'){
                     index=0;
-                    showLog("------'+' happens again...buffer index return to default.");
+//                    showLog("------'+' happens again...buffer index return to default.");
                 }else {
-                    showLog("------fill the byte into buffer");
+//                    showLog("------fill the byte into buffer");
                     temp[index]=buffer[i];
                     if(index<255){
                         index++;
@@ -384,7 +384,7 @@ public class AdspAckDecipher {
                 }
                 break;
         }
-        showLog("decipher ends");
+//        showLog("decipher ends");
     }
 
     private void showLog(String msg){
