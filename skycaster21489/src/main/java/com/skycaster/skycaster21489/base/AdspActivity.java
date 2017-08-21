@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +16,6 @@ import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.utils.AdspAckDecipher;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 import com.skycaster.skycaster21489.utils.AlertDialogUtils;
-import com.skycaster.skycaster21489.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +34,8 @@ public abstract class AdspActivity extends AppCompatActivity {
     private static final String FREQ = "frequency";
     private static final String LEFT_TUNE = "left_tune";
     private static final String RIGHT_TUNE = "right_tune";
-    private static final String ENABLE_SAVE_BIZ_DATA="is_save_business_data";
+    private static final String ENABLE_SAVE_RAW_DATA ="is_save_raw_data";
     private static final int REQUEST_PERMISSIONS = 911;
-    private static final int BIZ_DATA_LEN=10;
     protected SerialPort mSerialPort;
     protected int mBaudRate;
     protected String mSerialPortPath;
@@ -54,10 +51,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     private AckCallBack mAckCallBack;
     private static final String[] PERMISSIONS=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private AdspRequestManager mRequestManager;
-    private byte[] bizData=new byte[BIZ_DATA_LEN];
-    private int bizDataIndex =0;
-    private Handler mHandler;
-    private boolean isSaveBizData;
+    private boolean isSaveRawData;
 
     /**
      * 获得AdspRequestManager实例。AdspRequestManager已在AdspActivity的onCreate()方法中被初始化，可以通过这个
@@ -70,29 +64,29 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得当前串口波特率。
-     * @return
+     * @return 当前串口波特率
      */
     public int getBaudRate() {
         return mBaudRate;
     }
 
     /**
-     * 判断当前是否设置了保存业务数据。
-     * @return 如果返回true,每次启动业务数据后，程序都会尝试在SD卡DownLoad文件夹里面建立一个以启动时间为索引的text文档，记录接收到的业务数据。
+     * 判断当前是否设置了在裸数据传输模式下保存裸数据。
+     * @return 如果返回true,每次启动裸数据传输后，程序都会尝试在SD卡DownLoad文件夹里面建立一个以启动时间为索引的text文档，记录接收到的业务数据（裸数据）。
      *
      */
-    public boolean isSaveBizData() {
-        return isSaveBizData;
+    public boolean isSaveRawData() {
+        return isSaveRawData;
     }
 
     /**
-     * 设置是否保存业务数据
-     * @param isSaveBizData
+     * 设置是否保存裸数据数据传输模式下的裸数据
+     * @param isSave 是否设置保存裸数据
      */
-    public void setIsSaveBizData(boolean isSaveBizData) {
+    public void setIsSaveRawData(boolean isSave) {
         if(!AdspRequestManager.isReceivingRawData()){
-            this.isSaveBizData = isSaveBizData;
-            mSharedPreferences.edit().putBoolean(ENABLE_SAVE_BIZ_DATA,isSaveBizData).apply();
+            this.isSaveRawData = isSave;
+            mSharedPreferences.edit().putBoolean(ENABLE_SAVE_RAW_DATA,isSave).apply();
         }else {
             showHint("业务数据正在传输中，设置无效。");
         }
@@ -101,7 +95,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得当前串口的路径。
-     * @return
+     * @return 当前串口的路径。
      */
     public String getSerialPortPath() {
         return mSerialPortPath;
@@ -117,13 +111,12 @@ public abstract class AdspActivity extends AppCompatActivity {
         mFreq=mSharedPreferences.getInt(FREQ,10510);
         mLeftTune=mSharedPreferences.getInt(LEFT_TUNE,46);
         mRightTune=mSharedPreferences.getInt(RIGHT_TUNE,60);
-        isSaveBizData=mSharedPreferences.getBoolean(ENABLE_SAVE_BIZ_DATA,false);
+        isSaveRawData =mSharedPreferences.getBoolean(ENABLE_SAVE_RAW_DATA,false);
         if(!TextUtils.isEmpty(mSerialPortPath)){
             openSerialPort(mSerialPortPath,mBaudRate);
         }
         mAdspAckDecipher = AdspAckDecipher.getInstance(this);
         mAckCallBack = setSerialPortAckCallBack();
-        mHandler=new Handler();
     }
 
     @Override
@@ -148,16 +141,15 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 设认默认串口路径，初次运行将通过此路径打开串口实现ADSP设备串口通信。
-     * @return
+     * @return 默认串口路径
      */
     @NonNull
     protected abstract String setDefaultSerialPortPath();
 
     /**
      * 设置默认串口波特率，初次运行将通过此波特率打开串口实现ADSP设备串口通信。
-     * @return
+     * @return 默认串口波特率
      */
-    @NonNull
     protected abstract int setDefaultBaudRate();
 
     /**
@@ -197,7 +189,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 同时更新缓存及本地串口路径的值。
-     * @param newPath
+     * @param newPath 新串口路径的值
      */
     private void updateSerialPortPath(String newPath){
         mSerialPortPath=newPath;
@@ -207,7 +199,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 同时更新缓存及本地串口波特率的值。
-     * @param baudRate
+     * @param baudRate 新波特率
      */
     private void updateBaudRate(int baudRate){
         mBaudRate=baudRate;
@@ -215,8 +207,8 @@ public abstract class AdspActivity extends AppCompatActivity {
     }
 
     /**
-     * 同时更新缓存及本地设备主频率的值。
-     * @param newFreq
+     * 同时更新缓存及本地设备频点的值。
+     * @param newFreq 新频点
      */
     public void updateFreq(int newFreq){
         mFreq=newFreq;
@@ -225,7 +217,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 同时更新缓存及本地设备左频的值。
-     * @param newLeftTune
+     * @param newLeftTune 新左频
      */
     public void updateLeftTune(int newLeftTune){
         mLeftTune=newLeftTune;
@@ -234,7 +226,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 同时更新缓存及本地设备右频的值。
-     * @param newRightTune
+     * @param newRightTune 新右频
      */
     public void updateRightTune(int newRightTune){
         mRightTune=newRightTune;
@@ -243,7 +235,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得当前设备频点。
-     * @return
+     * @return 当前设备频点
      */
     public int getFreq() {
         return mFreq;
@@ -251,7 +243,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得当前设备左频。
-     * @return
+     * @return 当前设备左频
      */
     public int getLeftTune() {
         return mLeftTune;
@@ -259,7 +251,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得当前设备右频。
-     * @return
+     * @return 当前设备右频
      */
     public int getRightTune() {
         return mRightTune;
@@ -269,7 +261,6 @@ public abstract class AdspActivity extends AppCompatActivity {
      * 串口被打开后，将通过此方法开启一个子线程，启动串口通信。
      */
     private synchronized void startListeningInputStream() {
-        LogUtils.showLog("startListeningInputStream");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -283,34 +274,11 @@ public abstract class AdspActivity extends AppCompatActivity {
                         showHint(e.toString());
                     }
                 }
-//                //尝试解决掉包的问题。
-//                while (isPortOpen){
-//                    try {
-//                        int b = mInputStream.read();
-//                        if(b>0){
-//                            onReceivePortData((byte) b);
-//                        }
-//                        try {
-//                            Thread.sleep(10);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
             }
         }).start();
         showHint("串口设置成功,当前串口："+mSerialPortPath+" ,波特率："+mBaudRate+"。");
     }
 
-//    /**
-//     * 尝试解决掉包的问题。
-//     * @param data
-//     */
-//    protected  void onReceivePortData(byte data){
-//        mAdspAckDecipher.onReceiveDate(new byte[]{data},1,mAckCallBack);
-//    }
 
     /**
      * 根据协议，解析串口通讯数据。
@@ -368,7 +336,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         closeSerialPort();
-        mRequestManager.setIsUpgrading(false,false,"程序退出。");
+        AdspRequestManager.setIsUpgrading(false,false,"程序退出。");
 
     }
 
@@ -381,7 +349,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得串口通讯的输入流
-     * @return
+     * @return 串口通讯的输入流
      */
     public InputStream getInputStream() {
         return mInputStream;
@@ -389,7 +357,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 获得串口通讯的输出流
-     * @return
+     * @return 串口通讯的输出流
      */
     public OutputStream getOutputStream() {
         return mOutputStream;
@@ -397,7 +365,7 @@ public abstract class AdspActivity extends AppCompatActivity {
 
     /**
      * 判断当前串口是否已经打开
-     * @return
+     * @return 当前串口是否已经打开
      */
     public boolean isPortOpen() {
         return isPortOpen;
@@ -423,7 +391,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode==REQUEST_PERMISSIONS){
-            StringBuffer sb=new StringBuffer();
+            StringBuilder sb=new StringBuilder();
             for(String s:PERMISSIONS){
                 sb.append(s).append("\r\n");
             }
@@ -464,37 +432,13 @@ public abstract class AdspActivity extends AppCompatActivity {
         }
     }
 
-//    /**
-//     * 发起业务数据后，接收到业务数据后的回调。仅供特定内部函数调用，不建议开发者直接调用此方法。
-//     * @param bizByte 单个字节的业务数据
-//     */
-//    public void onReceiveBizDataByte(byte bizByte){
-//        if(isSaveBizData){
-//            WriteFileUtil.writeBizFile(bizByte);
-//        }
-//        bizData[bizDataIndex]=bizByte;
-//        bizDataIndex++;
-//        if(bizDataIndex==BIZ_DATA_LEN){
-//            bizDataIndex=0;
-//            onGetBizData(bizData.clone());
-//        }
-//    }
-
-
 
     /**
-     * 将收集到的业务数据一次性返回给调用方。
-     * @param bizData 业务数据
-     *
+     * 启动裸数据传输时获得裸数据的回调
+     * @param data 一个盛装裸数据的字节数组容器，长度为512个字节
+     * @param len 有效数据长度
      */
-    public abstract void onGetBizData(byte[] bizData,int len);
+    public abstract void onGetRawData(byte[] data, int len);
 
-    public void post(Runnable runnable){
-        mHandler.post(runnable);
-    }
-
-    public void postDelay(Runnable runnable,long millis){
-        mHandler.postDelayed(runnable,millis);
-    }
 
 }

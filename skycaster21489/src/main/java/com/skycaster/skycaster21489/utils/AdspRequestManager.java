@@ -8,6 +8,7 @@ import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.data.AdspBaudRates;
 import com.skycaster.skycaster21489.data.ServiceCode;
+import com.skycaster.skycaster21489.excpt.DeviceIdCharTypeException;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
@@ -24,7 +25,7 @@ import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckConnectStatus;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckDeviceId;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckFreq;
-import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckIfReceivingData;
+import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckIfActivate;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckSfo;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckSnrRate;
 import static com.skycaster.skycaster21489.utils.AdspRequestManager.RequestType.CheckSnrStatus;
@@ -68,7 +69,6 @@ public class AdspRequestManager {
      * 盛装系统指定的波特率种类的容器
      */
     private static int[] BAUD_RATES;
-
 
     public static boolean isDeviceActivated() {
         return isDeviceActivated;
@@ -118,25 +118,25 @@ public class AdspRequestManager {
         return ADSP_REQUEST_MANAGER;
     }
 
-    public void testBaudRates(){
-        isTestingBaudRate=true;
-        isBaudRateSynchronize=false;
-        testBaudRate(0);
-    }
+//    public void testBaudRates(){
+//        isTestingBaudRate=true;
+//        isBaudRateSynchronize=false;
+//        testBaudRate(0);
+//    }
 
-    private void testBaudRate(final int index){
-        if(mContext.changeBaudRate(BAUD_RATES[index])){
-            checkConnectionStatus();
-            mContext.postDelay(new Runnable() {
-                @Override
-                public void run() {
-                    if(!isBaudRateSynchronize&&index<BAUD_RATES.length-1){
-                        testBaudRate(index+1);
-                    }
-                }
-            },5000);
-        }
-    }
+//    private void testBaudRate(final int index){
+//        if(mContext.changeBaudRate(BAUD_RATES[index])){
+//            checkConnectionStatus();
+//            mContext.postDelay(new Runnable() {
+//                @Override
+//                public void run() {
+//                    if(!isBaudRateSynchronize&&index<BAUD_RATES.length-1){
+//                        testBaudRate(index+1);
+//                    }
+//                }
+//            },5000);
+//        }
+//    }
 
     /**
      * 可以通过该指令测试ADSP是否正常运行以及通信链路是否正常。
@@ -240,21 +240,34 @@ public class AdspRequestManager {
 
     /**
      * 设置校验失败是否输出。
-     * @param isToEnable
+     * @param isToEnable 校验失败是否输出
      */
     public void toggleCKFO(boolean isToEnable){
-        if(isToEnable){
-            sendRequest(formRequest(ToggleCkfo,"ENABLE"));
-        }else {
-            sendRequest(formRequest(ToggleCkfo,"DISABLE"));
+        if(!checkIfReceivingRawData()){
+            if(isToEnable){
+                sendRequest(formRequest(ToggleCkfo,"ENABLE"));
+            }else {
+                sendRequest(formRequest(ToggleCkfo,"DISABLE"));
+            }
         }
     }
+
+    private boolean checkIfReceivingRawData(){
+        boolean isReceiving=isReceivingRawData;
+        if(isReceiving){
+           mContext.showHint("操作无效：目前正在执行裸数据传输，请先停止传输。");
+        }
+        return isReceiving;
+    }
+
     /**
      * 设置波特率。
      * @param baudRate 波特率。注意：只能设置9600(bps)、19200(bps)、115200(bps)三种。
      */
     public void setBaudRate(AdspBaudRates baudRate) {
-        sendRequest(formRequest(SetBaudRate,baudRate.toString()));
+        if(!checkIfReceivingRawData()){
+            sendRequest(formRequest(SetBaudRate,baudRate.toString()));
+        }
     }
 
     /**
@@ -263,11 +276,14 @@ public class AdspRequestManager {
      * @throws FreqOutOfRangeException ADSP频点范围必须为[6400,10800]，否则将抛出此异常。
      */
     public void setFreq(int freq) throws FreqOutOfRangeException{
-        if(freq<6400||freq>10800){
-            throw new FreqOutOfRangeException("ADSP主频范围必须为[6400,10800]。");
+        if(!checkIfReceivingRawData()){
+            if(freq<6400||freq>10800){
+                throw new FreqOutOfRangeException("ADSP主频范围必须为[6400,10800]。");
+            }
+            sendRequest(formRequest(SetFreq,String.valueOf(freq)));
+            mContext.updateFreq(freq);
         }
-        sendRequest(formRequest(SetFreq,String.valueOf(freq)));
-        mContext.updateFreq(freq);
+
     }
 
     /**
@@ -277,21 +293,24 @@ public class AdspRequestManager {
      * @throws TunerSettingException 左频与右频的取值范围必须为[1,64]，且左频必须小于右频，否则将抛出此异常。
      */
     public void setTunes(int leftTune,int rightTune) throws TunerSettingException{
-        if(leftTune<1||leftTune>64||rightTune<1||rightTune>64){
-            throw new TunerSettingException("左频/右频取值范围必须>=1且<=64。");
+        if(!checkIfReceivingRawData()){
+            if(leftTune<1||leftTune>64||rightTune<1||rightTune>64){
+                throw new TunerSettingException("左频/右频取值范围必须>=1且<=64。");
+            }
+            if(leftTune>=rightTune){
+                throw new TunerSettingException("左频数值必须小于右频。");
+            }
+            sendRequest(formRequest(SetTunes,
+                    new StringBuilder()
+                            .append(String.valueOf(leftTune))
+                            .append(",")
+                            .append(String.valueOf(rightTune))
+                            .toString()
+                            .trim()));
+            mContext.updateLeftTune(leftTune);
+            mContext.updateRightTune(rightTune);
         }
-        if(leftTune>=rightTune){
-            throw new TunerSettingException("左频数值必须小于右频。");
-        }
-        sendRequest(formRequest(SetTunes,
-                new StringBuffer()
-                        .append(String.valueOf(leftTune))
-                        .append(",")
-                        .append(String.valueOf(rightTune))
-                        .toString()
-                        .trim()));
-        mContext.updateLeftTune(leftTune);
-        mContext.updateRightTune(rightTune);
+
     }
 
     /**
@@ -299,11 +318,14 @@ public class AdspRequestManager {
      * @param isToEnable true为开，false为关。
      */
     public void toggle1Pps(boolean isToEnable){
-        if(isToEnable){
-            sendRequest(formRequest(Toggle1Pps,"OPEN"));
-        }else {
-            sendRequest(formRequest(Toggle1Pps,"CLOSE"));
+        if(!checkIfReceivingRawData()){
+            if(isToEnable){
+                sendRequest(formRequest(Toggle1Pps,"OPEN"));
+            }else {
+                sendRequest(formRequest(Toggle1Pps,"CLOSE"));
+            }
         }
+
     }
 
 
@@ -313,7 +335,7 @@ public class AdspRequestManager {
      * @param upgradeFile 本地升级文件。
      */
     public void prepareUpgrade(final AdspActivity context, final File upgradeFile) {
-        if(checkIfUpgrading()){
+        if(checkIfUpgrading()||checkIfReceivingRawData()){
             return;
         }
         new Thread(new Runnable() {
@@ -345,8 +367,9 @@ public class AdspRequestManager {
                     context.showHint(e.toString());
                     return;
                 }
-                StringBuffer sb=new StringBuffer();
-                sb.append(code).append(",").append(String.valueOf(upgradeFile.length()));
+
+                StringBuilder sb=new StringBuilder();
+                sb.append(code&0xff).append(",").append(String.valueOf(upgradeFile.length()));
                 mUpgradeFile=upgradeFile;
                 sendRequest(formRequest(PrepareUpgrade,sb.toString()));
             }
@@ -434,24 +457,51 @@ public class AdspRequestManager {
     //******************************5月16日新增命令*****************************
 
     /**
-     * 查询当前设备是否正在接收业务数据
+     * 查询当前接收机是否已经被打开
      */
-    public void checkIfRecievingData(){
-        sendRequest(formRequest(CheckIfReceivingData));
+    public void checkIfActivated(){
+        sendRequest(formRequest(CheckIfActivate));
     }
 
 
     /**
      * 设置产品ID，本功能只在设备出厂时，厂家调用。终端用户如果使用此功能，将可能导致设备无法运行。
-     * @param id 新的产品ID,最大长度不可超出20个字符。
+     * @param id 新的产品ID,最大长度不可超出20个字符，只能由字母或数字组成
      * @throws DeviceIdOverLengthException 新的产品ID最大长度不可超出20个字符,否则抛出此异常。
+     * @throws DeviceIdCharTypeException 设备ID只能由字母或数字组成，否则将弹出此异常。
      */
-    public void setDeviceId(String id) throws DeviceIdOverLengthException{
-        if(id.length()>21){
-            throw new DeviceIdOverLengthException("ID长度不可以超过20个字符。");
-        }else {
-            sendRequest(formRequest(SetDeviceId,id));
+    public void setDeviceId(String id) throws DeviceIdOverLengthException,DeviceIdCharTypeException{
+        if(!checkIfReceivingRawData()){
+            if(id.length()>21){
+                throw new DeviceIdOverLengthException("ID长度不可以超过20个字符。");
+            }else {
+                boolean isValidate=true;
+                byte[] bytes = id.getBytes();
+                for(byte b:bytes){
+                    if(!(isValidate=checkIfIdValidate(b))){
+                        break;
+                    }
+                }
+                if(isValidate){
+                    sendRequest(formRequest(SetDeviceId,id));
+                }else {
+                    throw new DeviceIdCharTypeException("设置失败：设备ID只能由英文字母或数字组成。");
+                }
+            }
         }
+    }
+
+    private boolean checkIfIdValidate(byte b){
+        boolean isValidate=false;
+        char c= (char) (b&0xff);
+        if(c>='0'&&c<='9'){
+            isValidate=true;
+        }else if(c>='a'&&c<='z'){
+            isValidate=true;
+        }else if(c>='A'&&c<='Z'){
+            isValidate=true;
+        }
+        return isValidate;
     }
 
     /**
@@ -471,7 +521,7 @@ public class AdspRequestManager {
 
     @NonNull
     private synchronized byte[] formRequest(RequestType requestType, @Nullable String params){
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb=new StringBuilder();
         sb.append(PREFIX);
         switch (requestType){
             case CheckConnectStatus:
@@ -548,7 +598,7 @@ public class AdspRequestManager {
                 sb.append("+1PPS?");
                 break;
             //********************5月17日新增******************
-            case CheckIfReceivingData:
+            case CheckIfActivate:
                 sb.append("+RECVOP?");
                 break;
             case SetDeviceId:
@@ -626,7 +676,7 @@ public class AdspRequestManager {
         CheckSoftwareVersion, CheckDeviceId,CheckSnrRate,CheckSnrStatus,
         CheckSfo,CheckCfo,CheckTunerStatus,CheckTaskList,CheckSystemDate,
         ToggleCkfo,SetBaudRate,SetFreq,SetTunes,Toggle1Pps,Check1PpsConfig, StartService,
-        PrepareUpgrade, CheckCkfoSetting, CheckFreq, CheckTunes,CheckIfReceivingData,
+        PrepareUpgrade, CheckCkfoSetting, CheckFreq, CheckTunes, CheckIfActivate,
         SetDeviceId
     }
 }

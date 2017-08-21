@@ -22,6 +22,7 @@ import com.skycaster.adsp21489.data.ConsoleItemType;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.data.ServiceCode;
+import com.skycaster.skycaster21489.excpt.DeviceIdCharTypeException;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 
@@ -41,9 +42,6 @@ public class MainActivity extends BaseActivity {
     private ListView mSubConsole;
     private ArrayList<ConsoleItem> mSubConsoleContents=new ArrayList<>();
     private ConsoleAdapter mSubConsoleAdapter;
-
-
-
 
 
     @NonNull
@@ -202,8 +200,8 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void checkIfReceivingData(boolean isRunning, String info) {
-                super.checkIfReceivingData(isRunning, info);
+            public void checkIfActivated(boolean isActivated, String info) {
+                super.checkIfActivated(isActivated, info);
                 updateMainConsole(info);
             }
 
@@ -339,6 +337,22 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 mSubConsoleAdapter.setToHex(!mSubConsoleAdapter.isToHex());
+            }
+        });
+
+        //次console一键到顶
+        onClick(R.id.main_iv_to_sub_console_top, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSubConsole.smoothScrollToPosition(0);
+            }
+        });
+
+        //次console一键到底
+        onClick(R.id.main_iv_to_sub_console_bottom, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
             }
         });
 
@@ -534,11 +548,11 @@ public class MainActivity extends BaseActivity {
         });
 
         //***********************************5月16日新增命令************************************
-        //查询当前是否正在接受业务数据
-        onClick(R.id.btn_check_if_receiving_data, new View.OnClickListener() {
+        //查询当前接收机是否已经开启
+        onClick(R.id.btn_check_if_activated, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestManager.checkIfRecievingData();
+                mRequestManager.checkIfActivated();
             }
         });
 
@@ -552,6 +566,8 @@ public class MainActivity extends BaseActivity {
                         try {
                             mRequestManager.setDeviceId(id);
                         } catch (DeviceIdOverLengthException e) {
+                            showHint(e.toString());
+                        } catch (DeviceIdCharTypeException e){
                             showHint(e.toString());
                         }
                     }
@@ -692,7 +708,7 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    public void onGetBizData(byte[] bizData,int len) {
+    public void onGetRawData(byte[] bizData, int len) {
         updateMainConsole(new ConsoleItem(Arrays.copyOf(bizData,len),ConsoleItemType.ITEM_TYPE_RESULT));
     }
 
@@ -749,7 +765,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
         MenuItem menuItem = menu.findItem(R.id.menu_enable_save);
-        if(isSaveBizData()){
+        if(isSaveRawData()){
             menuItem.setIcon(R.drawable.ic_save_white_36dp);
         }else {
             menuItem.setIcon(R.drawable.ic_save_grey_36dp);
@@ -768,7 +784,7 @@ public class MainActivity extends BaseActivity {
                 confirmBackPress();
                 break;
             case R.id.menu_enable_save:
-                setIsSaveBizData(!isSaveBizData());
+                setIsSaveRawData(!isSaveRawData());
                 supportInvalidateOptionsMenu();
                 break;
             default:

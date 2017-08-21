@@ -17,7 +17,7 @@ public abstract class AckCallBack {
     private static int upgradePacketIndex;
     private AdspActivity mActivity;
 
-    public AckCallBack(AdspActivity activity) {
+    protected AckCallBack(AdspActivity activity) {
         mActivity = activity;
     }
 
@@ -78,7 +78,7 @@ public abstract class AckCallBack {
         if(isSuccess){
             AdspRequestManager.setIsDeviceActivated(false);
             AdspRequestManager.setIsReceivingRawData(false);
-            if(mActivity.isSaveBizData()){
+            if(mActivity.isSaveRawData()){
                 WriteFileUtil.stopWritingFiles();
             }
         }
@@ -248,19 +248,19 @@ public abstract class AckCallBack {
      * @param packageIndex 当前升级包序号
      */
     public void onReceiveUpgradePackage(boolean isSuccess, String packageIndex) {
-//        LogUtils.showLog("升级包接收成功："+isSuccess+"，总包数："+AdspRequestManager.TOTAL_PACKET_COUNT+",当前包序号："+packageIndex);
+        LogUtils.showLog("升级包接收成功："+isSuccess+"，总包数："+AdspRequestManager.TOTAL_PACKET_COUNT+",当前包序号："+packageIndex);
         if(isSuccess){
             Integer index = Integer.valueOf(packageIndex);
             if(index==AdspRequestManager.TOTAL_PACKET_COUNT){
                 AdspRequestManager.setIsUpgrading(false,true,"升级成功！");
             }else {
                 if(upgradePacketIndex==index){
-//                    LogUtils.showLog("升级包序号连续，准备接收下一包...");
+                    LogUtils.showLog("升级包序号连续，准备接收下一包...");
                     //如果升级包序号是连续的，则正常下一步
                     upgradePacketIndex++;
                 }else {
                     //如果升级包序号不是连续的，则跳出升级，返回失败信息。
-//                    LogUtils.showLog("升级包序号不连续，升级失败！");
+                    LogUtils.showLog("升级包序号不连续，升级失败！");
                     AdspRequestManager.setIsUpgrading(false,false,"升级包序号不连续，升级失败！");
                 }
             }
@@ -271,11 +271,11 @@ public abstract class AckCallBack {
 
     //*******************************5月16日新增*************************
     /**
-     * 查询是否正在接受业务数据的回调
-     * @param isRunning true表示正在接收，false表示状态为空闲。
+     * 查询是否已经启动接收机
+     * @param isActivated true表示已经打开，false表示状态为已经关闭。
      * @param info 提示信息。
      */
-    public void checkIfReceivingData(boolean isRunning, String info) {
+    public void checkIfActivated(boolean isActivated, String info) {
 
     }
 
@@ -308,7 +308,7 @@ public abstract class AckCallBack {
                 case RAW_DATA:
                     LogUtils.showLog("raw data begin...");
                     AdspRequestManager.setIsReceivingRawData(true);
-                    if(mActivity.isSaveBizData()){
+                    if(mActivity.isSaveRawData()){
                         WriteFileUtil.prepareFile(new Date(),mActivity);
                     }
                     break;

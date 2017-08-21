@@ -62,10 +62,10 @@
                 android:text="关闭接收机"/>
 
             <Button
-                android:id="@+id/btn_check_if_receiving_data"
+                android:id="@+id/btn_check_if_activated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="查询当前是否正在接收业务数据"/>
+                android:text="查询当前接收机是否已经启动"/>
 
             <Button
                 android:id="@+id/btn_check_software_version"
