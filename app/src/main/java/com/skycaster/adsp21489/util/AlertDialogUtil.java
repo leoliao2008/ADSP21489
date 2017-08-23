@@ -398,4 +398,37 @@ public class AlertDialogUtil {
         void onDeviceIdConfirm(String id);
     }
 
+    public static void showSetResetCountDialog(Context context, final ResetCountInputListener listener){
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        View rootView=View.inflate(context,R.layout.set_reset_count_layout,null);
+        final EditText edt_count= (EditText) rootView.findViewById(R.id.set_reset_count_layout_edt_input_count);
+        Button btn_confirm= (Button) rootView.findViewById(R.id.set_reset_count_layout_btn_confirm);
+        Button btn_cancel= (Button) rootView.findViewById(R.id.set_reset_count_layout_btn_cancel);
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = edt_count.getText().toString();
+                if(input!=null&&!TextUtils.isEmpty(input.trim())){
+                    listener.onResetCountInput(Integer.valueOf(input));
+                    mAlertDialog.dismiss();
+                }else {
+                    ToastUtil.showToast("输入不能为空。");
+                }
+            }
+        });
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAlertDialog.dismiss();
+            }
+        });
+        builder.setView(rootView);
+        mAlertDialog=builder.create();
+        mAlertDialog.show();
+    }
+
+    public interface ResetCountInputListener{
+        void onResetCountInput(int count);
+    }
+
 }

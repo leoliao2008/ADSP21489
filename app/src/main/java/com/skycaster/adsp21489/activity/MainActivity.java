@@ -24,6 +24,7 @@ import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.excpt.DeviceIdCharTypeException;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
+import com.skycaster.skycaster21489.excpt.ResetCountOutOfLimitException;
 import com.skycaster.skycaster21489.utils.AdspRequestManager;
 
 import java.io.File;
@@ -240,6 +241,20 @@ public class MainActivity extends BaseActivity {
                         break;
                 }
                 updateMainConsole(sb.toString());
+            }
+
+            //****************8月23日新增***************
+
+            @Override
+            public void setResetCount(boolean isSuccess, String info) {
+                updateMainConsole(info);
+            }
+
+            @Override
+            public void checkResetCount(boolean isSuccess, int count) {
+                if(isSuccess){
+                    updateMainConsole("重启次数设置成功： "+count);
+                }
             }
         };
     }
@@ -579,6 +594,33 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 AlertDialogUtil.showServiceOptions(MainActivity.this);
+            }
+        });
+
+        //*************************************8月23日新增命令*******************************
+        //查询重启次数
+        onClick(R.id.btn_check_reset_count, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestManager.checkResetCount();
+            }
+        });
+
+        //设置重启次数
+        onClick(R.id.btn_set_reset_count, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialogUtil.showSetResetCountDialog(MainActivity.this, new AlertDialogUtil.ResetCountInputListener() {
+                    @Override
+                    public void onResetCountInput(int count) {
+                        try {
+                            mRequestManager.setResetCount(count);
+                        } catch (ResetCountOutOfLimitException e) {
+                            showToast(e.getMessage());
+                        }
+
+                    }
+                });
             }
         });
 

@@ -318,4 +318,23 @@ public abstract class AckCallBack {
             }
         }
     }
+
+
+    /**
+     * 发起设置启动次数的请求后，接收机执行的回调。
+     * @param isSuccess 是否设置成功。
+     * @param info 提示信息。
+     */
+    public void setResetCount(boolean isSuccess, String info) {
+
+    }
+
+    /**
+     * 发起查询启动次数的请求后，接收机执行的回调
+     * @param isSuccess 是否执行成功
+     * @param count 启动次数
+     */
+    public void checkResetCount(boolean isSuccess, int count) {
+
+    }
 }

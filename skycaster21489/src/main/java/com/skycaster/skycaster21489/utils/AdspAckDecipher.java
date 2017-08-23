@@ -377,6 +377,15 @@ public class AdspAckDecipher {
             case "SERV=ERROR":
                 ackCallBack.startService(false,ServiceCode.initServiceCodeByDigit(acks[1]));
                 break;
+            case "RSCNT=OK":
+                ackCallBack.setResetCount(true,"设置重启次数成功。");
+                break;
+            case "RSCNT=ERROR":
+                ackCallBack.setResetCount(false,"设置重启次数失败。");
+                break;
+            case "RSCNT":
+                ackCallBack.checkResetCount(true,Integer.valueOf(acks[1]));
+                break;
             default:
                 ackCallBack.onError("数据格式不符合协议，解析失败。");
                 if(AdspRequestManager.isUpgrading()){

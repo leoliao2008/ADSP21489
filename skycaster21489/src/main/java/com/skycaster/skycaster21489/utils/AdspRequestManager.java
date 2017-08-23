@@ -11,6 +11,7 @@ import com.skycaster.skycaster21489.data.ServiceCode;
 import com.skycaster.skycaster21489.excpt.DeviceIdCharTypeException;
 import com.skycaster.skycaster21489.excpt.DeviceIdOverLengthException;
 import com.skycaster.skycaster21489.excpt.FreqOutOfRangeException;
+import com.skycaster.skycaster21489.excpt.ResetCountOutOfLimitException;
 import com.skycaster.skycaster21489.excpt.TunerSettingException;
 
 import java.io.File;
@@ -490,6 +491,28 @@ public class AdspRequestManager {
             }
         }
     }
+    //************************8月23日新增命令*********************************//
+
+
+    /**
+     * 设置重启次数
+     * @param count 重启次数
+     * @throws ResetCountOutOfLimitException 如果次数不再限定范围内[0-255]，则抛出此异常。
+     */
+    public void setResetCount(int count) throws ResetCountOutOfLimitException{
+        if(count<0||count>=256){
+            throw new ResetCountOutOfLimitException("重启次数设置范围为[0-255]");
+        }
+        sendRequest(formRequest(RequestType.SetResetCount,String.valueOf(count)));
+
+    }
+
+    /**
+     * 查询重启次数
+     */
+    public void checkResetCount(){
+        sendRequest(formRequest(RequestType.CheckResetCount));
+    }
 
     private boolean checkIfIdValidate(byte b){
         boolean isValidate=false;
@@ -604,6 +627,14 @@ public class AdspRequestManager {
             case SetDeviceId:
                 sb.append("+ID=");
                 break;
+            //*******************8月23日更新***********************
+            case SetResetCount:
+                sb.append("+RSCNT=");
+                break;
+            case CheckResetCount:
+                sb.append("+RSCNT?");
+                break;
+
         }
         if(!TextUtils.isEmpty(params)){
             sb.append(params);
@@ -677,6 +708,6 @@ public class AdspRequestManager {
         CheckSfo,CheckCfo,CheckTunerStatus,CheckTaskList,CheckSystemDate,
         ToggleCkfo,SetBaudRate,SetFreq,SetTunes,Toggle1Pps,Check1PpsConfig, StartService,
         PrepareUpgrade, CheckCkfoSetting, CheckFreq, CheckTunes, CheckIfActivate,
-        SetDeviceId
+        SetDeviceId, SetResetCount,CheckResetCount;
     }
 }
