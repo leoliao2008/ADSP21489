@@ -593,7 +593,14 @@ public class MainActivity extends BaseActivity {
         onClick(R.id.btn_start_service, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialogUtil.showServiceOptions(MainActivity.this);
+//                AlertDialogUtil.showServiceOptionsBySpinner(MainActivity.this);
+                //*******************8月24日更改***********************
+                AlertDialogUtil.showServiceOptionsByEditText(MainActivity.this, new AlertDialogUtil.OnServiceCodeInputListener() {
+                    @Override
+                    public void onServiceCodeInput(String code) {
+                        mRequestManager.startService(code);
+                    }
+                });
             }
         });
 

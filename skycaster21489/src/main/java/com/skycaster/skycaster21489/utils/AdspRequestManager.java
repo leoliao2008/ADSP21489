@@ -540,6 +540,19 @@ public class AdspRequestManager {
 
     }
 
+    /**
+     * 启动特定业务
+     * @param serviceCode 业务代号，详情请参考说明文档。
+     */
+    public void startService(String serviceCode){
+        if(isDeviceActivated){
+            sendRequest(formRequest(StartService, serviceCode));
+        }else {
+            mContext.showHint("请先启动设备。");
+        }
+
+    }
+
 
 
     @NonNull

@@ -309,9 +309,9 @@ public class AlertDialogUtil {
         mAlertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
     }
 
-    public static void showServiceOptions(final AdspActivity context) {
+    public static void showServiceOptionsBySpinner(final AdspActivity context) {
         //init view
-        View rootView=LayoutInflater.from(context).inflate(R.layout.show_service_options,null);
+        View rootView=LayoutInflater.from(context).inflate(R.layout.choose_available_service_by_spinner,null);
         AppCompatSpinner spinner= (AppCompatSpinner) rootView.findViewById(R.id.start_service_layout_spin_options);
         Button btn_confirm= (Button) rootView.findViewById(R.id.start_service_layout_btn_confirm);
         Button btn_cancel= (Button) rootView.findViewById(R.id.start_service_layout_btn_cancel);
@@ -355,6 +355,38 @@ public class AlertDialogUtil {
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
         mAlertDialog=builder.setView(rootView).create();
         mAlertDialog.show();
+    }
+
+    public static void showServiceOptionsByEditText(Context context, final OnServiceCodeInputListener listener){
+        View rootView=View.inflate(context,R.layout.choose_available_service_by_edit_text,null);
+        final EditText edt_input= (EditText) rootView.findViewById(R.id.choose_service_edt_service_code);
+        Button btn_confirm= (Button) rootView.findViewById(R.id.choose_service_btn_confirm);
+        Button btn_cancel= (Button) rootView.findViewById(R.id.choose_service_btn_cancel);
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = edt_input.getText().toString().trim();
+                if(TextUtils.isEmpty(input)){
+                    ToastUtil.showToast("输入值不能为空！");
+                }else {
+                    listener.onServiceCodeInput(input);
+                    mAlertDialog.dismiss();
+                }
+            }
+        });
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAlertDialog.dismiss();
+            }
+        });
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        mAlertDialog=builder.setView(rootView).create();
+        mAlertDialog.show();
+    }
+
+    public interface OnServiceCodeInputListener{
+        void onServiceCodeInput(String code);
     }
 
     public interface UpgradeFileSelectedListener{

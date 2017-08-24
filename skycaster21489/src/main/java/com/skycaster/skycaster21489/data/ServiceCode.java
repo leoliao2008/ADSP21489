@@ -15,7 +15,7 @@ public enum ServiceCode {
      */
     public static ServiceCode initServiceCodeByDigit(String code){
         switch (code){
-            case "33":
+            case "1":
                 return RAW_DATA;
             case "ALL":
                 return ALL;
@@ -48,7 +48,7 @@ public enum ServiceCode {
     public String toString() {
         switch (super.toString()){
             case "RAW_DATA":
-                return "33";
+                return "1";
             case "ALL":
                 return "ALL";
         }
