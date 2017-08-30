@@ -13,4 +13,9 @@
           android:title="重新选择串口"
           app:showAsAction="never"/>
 
+    <item android:id="@+id/menu_display_snr_chart_view"
+          android:icon="@android:drawable/ic_secure"
+          android:title="展示音噪率"
+          app:showAsAction="always"/>
+
 </menu>

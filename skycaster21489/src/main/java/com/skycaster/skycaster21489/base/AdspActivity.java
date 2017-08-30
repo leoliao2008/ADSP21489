@@ -290,7 +290,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     }
 
     /**
-     * 通过串口发送请求到ADSP设备，此函数有时会被子线程调用，请注意。
+     * 通过串口发送请求到ADSP设备，此函数有时会被子线程调用，覆写的时候请注意保证线程安全。
      * @param request 根据通讯协议编写的请求，以字节数组的形式储存。
      * @param start 数组起始下标。
      * @param len 从起始下标的字节开始算起，字节数组中要发送的那部分的长度。

@@ -1,9 +1,13 @@
 package com.skycaster.adsp21489.activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.view.Gravity;
 import android.view.Menu;
@@ -16,8 +20,8 @@ import android.widget.TextView;
 import com.skycaster.adsp21489.R;
 import com.skycaster.adsp21489.adapter.ConsoleAdapter;
 import com.skycaster.adsp21489.base.BaseActivity;
-import com.skycaster.adsp21489.base.BaseApplication;
 import com.skycaster.adsp21489.bean.ConsoleItem;
+import com.skycaster.adsp21489.customized.SNRChartView;
 import com.skycaster.adsp21489.data.ConsoleItemType;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
@@ -31,9 +35,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends BaseActivity {
+    private static final String IS_DISPLAY_SNR = "IS_DISPLAY_SNR";
     private ListView mMainConsole;
     private ActionBar mActionBar;
     private ArrayList<ConsoleItem> mMainConsoleContents =new ArrayList<>();
@@ -43,6 +50,45 @@ public class MainActivity extends BaseActivity {
     private ListView mSubConsole;
     private ArrayList<ConsoleItem> mSubConsoleContents=new ArrayList<>();
     private ConsoleAdapter mSubConsoleAdapter;
+    private AtomicBoolean isDisplaySnr=new AtomicBoolean(false);
+    private SharedPreferences mSharedPreferences;
+    private DrawerLayout mDrawerLayout;
+    private SNRChartView mSNRChartView;
+    private TextView tv_currentSnr;
+    private Handler mHandler;
+    private ArrayList<Thread> mThreads=new ArrayList<>();
+    private Runnable mRunnable_requestSnr=new Runnable() {
+        @Override
+        public void run() {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mThreads.add(Thread.currentThread());
+                    if(isPortOpen()){
+                        mRequestManager.checkSnrRate();
+                    }else {
+                        clearAllRequest();
+                        isDisplaySnr.set(false);
+                        mSharedPreferences.edit().putBoolean(IS_DISPLAY_SNR,false).apply();
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                supportInvalidateOptionsMenu();
+                            }
+                        });
+                        mThreads.remove(Thread.currentThread());
+                        return;
+                    }
+                    if(Thread.currentThread().isInterrupted()){
+                        mThreads.remove(Thread.currentThread());
+                        return;
+                    }
+                    mHandler.postDelayed(mRunnable_requestSnr,1000);
+                    mThreads.remove(Thread.currentThread());
+                }
+            }).start();
+        }
+    };
 
 
     @NonNull
@@ -91,9 +137,19 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void checkSnrRate(boolean isSuccess, String info) {
+            public void checkSnrRate(boolean isSuccess, final String info) {
                 super.checkSnrRate(isSuccess, info);
                 updateMainConsole(info);
+                if(isDisplaySnr.get()){
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            tv_currentSnr.setText("音噪率："+info);
+                            mSNRChartView.updateChartView(Float.valueOf(info));
+                        }
+                    });
+
+                }
             }
 
             @Override
@@ -280,6 +336,9 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         mMainConsole = (ListView) findViewById(R.id.main_console);
         mSubConsole= (ListView) findViewById(R.id.sub_console);
+        mDrawerLayout= (DrawerLayout) findViewById(R.id.drawer_layout);
+        mSNRChartView= (SNRChartView) findViewById(R.id.snr_chart_view);
+        tv_currentSnr= (TextView) findViewById(R.id.tv_current_snr);
     }
 
     @Override
@@ -294,6 +353,10 @@ public class MainActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }
+
+        mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);
+
+        mHandler=new Handler();
 
 
         //初始化main console
@@ -370,6 +433,7 @@ public class MainActivity extends BaseActivity {
                 mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
             }
         });
+
 
 
 
@@ -732,6 +796,40 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isDisplaySnr.set(mSharedPreferences.getBoolean(IS_DISPLAY_SNR,false));
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isDisplaySnr.get()){
+            mHandler.post(mRunnable_requestSnr);
+            if(!mDrawerLayout.isDrawerOpen(Gravity.END)){
+                mDrawerLayout.openDrawer(Gravity.END);
+            }
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        clearAllRequest();
+    }
+
+    private void clearAllRequest(){
+        mHandler.removeCallbacks(mRunnable_requestSnr);
+        Iterator<Thread> iterator = mThreads.iterator();
+        while (iterator.hasNext()){
+            Thread thread = iterator.next();
+            thread.interrupt();
+        }
+        mThreads.clear();
+    }
+
     private void sendAck(String ack){
         byte[] temp=ack.getBytes();
         onReceivePortData(temp,temp.length);
@@ -773,33 +871,23 @@ public class MainActivity extends BaseActivity {
     }
 
     private void updateMainConsole(final ConsoleItem consoleItem) {
-        BaseApplication.post(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mMainConsoleContents.add(consoleItem);
-                        mMainConsoleAdapter.notifyDataSetChanged();
-                        mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
-                    }
-                });
+                mMainConsoleContents.add(consoleItem);
+                mMainConsoleAdapter.notifyDataSetChanged();
+                mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
             }
         });
     }
 
     private void updateSubConsole(final ConsoleItem consoleItem) {
-        BaseApplication.post(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mSubConsoleContents.add(consoleItem);
-                        mSubConsoleAdapter.notifyDataSetChanged();
-                        mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
-                    }
-                });
+                mSubConsoleContents.add(consoleItem);
+                mSubConsoleAdapter.notifyDataSetChanged();
+                mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
             }
         });
     }
@@ -813,11 +901,17 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
-        MenuItem menuItem = menu.findItem(R.id.menu_enable_save);
+        MenuItem itemIsSave = menu.findItem(R.id.menu_enable_save);
         if(isSaveRawData()){
-            menuItem.setIcon(R.drawable.ic_save_white_36dp);
+            itemIsSave.setIcon(R.drawable.ic_save_white_36dp);
         }else {
-            menuItem.setIcon(R.drawable.ic_save_grey_36dp);
+            itemIsSave.setIcon(R.drawable.ic_save_grey_36dp);
+        }
+        MenuItem itemDisplayChartView = menu.findItem(R.id.menu_display_snr_chart_view);
+        if(isDisplaySnr.get()){
+            itemDisplayChartView.setIcon(R.drawable.ic_tonality_white_48dp);
+        }else {
+            itemDisplayChartView.setIcon(R.drawable.ic_tonality_grey600_48dp);
         }
         return true;
     }
@@ -834,6 +928,22 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.menu_enable_save:
                 setIsSaveRawData(!isSaveRawData());
+                supportInvalidateOptionsMenu();
+                break;
+            case R.id.menu_display_snr_chart_view:
+                clearAllRequest();
+                if(isDisplaySnr.get()){
+                    if(mDrawerLayout.isDrawerOpen(Gravity.END)){
+                        mDrawerLayout.closeDrawers();
+                    }
+                }else {
+                    if(!mDrawerLayout.isDrawerOpen(Gravity.END)){
+                        mDrawerLayout.openDrawer(Gravity.END);
+                    }
+                    mHandler.post(mRunnable_requestSnr);
+                }
+                isDisplaySnr.set(!isDisplaySnr.get());
+                mSharedPreferences.edit().putBoolean(IS_DISPLAY_SNR,isDisplaySnr.get()).apply();
                 supportInvalidateOptionsMenu();
                 break;
             default:
