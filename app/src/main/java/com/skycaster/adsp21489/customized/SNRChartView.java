@@ -30,6 +30,7 @@ public class SNRChartView extends View {
     private static final int MAX_VALUE=50;
     private static final int MIN_VALUE=-50;
     private static final int CHART_WIDTH=30;
+    private static final int MAX_CHART_COUNT=150;
     private ArrayList<Float> mSnrs=new ArrayList<>();
     private int mHeight;
     private int mWidth;
@@ -89,7 +90,7 @@ public class SNRChartView extends View {
         super.onDraw(canvas);
         int size = mSnrs.size();
         if(size>0){
-            for (int i=0;i<size;i++){
+            for (int i=Math.max(0,size-MAX_CHART_COUNT);i<size;i++){
                 Float snr = mSnrs.get(i);
                 Paint paint;
                 if(snr>=30){
