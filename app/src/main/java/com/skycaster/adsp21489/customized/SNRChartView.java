@@ -30,7 +30,6 @@ public class SNRChartView extends View {
     private static final int MAX_VALUE=50;
     private static final int MIN_VALUE=-50;
     private static final int CHART_WIDTH=30;
-    private static final int MAX_CHART_COUNT=150;
     private ArrayList<Float> mSnrs=new ArrayList<>();
     private int mHeight;
     private int mWidth;
@@ -87,42 +86,43 @@ public class SNRChartView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        int size = mSnrs.size();
-        if(size>0){
-            for (int i=Math.max(0,size-MAX_CHART_COUNT);i<size;i++){
-                Float snr = mSnrs.get(i);
-                Paint paint;
-                if(snr>=30){
-                    paint=mPaintGreen;
-                }else if(snr>=20){
-                    paint=mPaintLightGreen;
-                }else if(snr>=10){
-                    paint=mPaintYellow;
-                }else if(snr>3){
-                    paint=mPaintOrange;
-                }else {
-                    paint=mPaintRed;
+        synchronized (this){
+            super.onDraw(canvas);
+            int size = mSnrs.size();
+            if(size>0){
+                for (int i=0;i<size;i++){
+                    Float snr = mSnrs.get(i);
+                    Paint paint;
+                    if(snr>=30){
+                        paint=mPaintGreen;
+                    }else if(snr>=20){
+                        paint=mPaintLightGreen;
+                    }else if(snr>=10){
+                        paint=mPaintYellow;
+                    }else if(snr>3){
+                        paint=mPaintOrange;
+                    }else {
+                        paint=mPaintRed;
+                    }
+                    float height=snr/MAX_VALUE*mHeight/2;
+                    float left = mWidth - CHART_WIDTH * (size - i);
+                    float right = (float) (left + CHART_WIDTH * 0.8);
+                    if(snr>0){
+                        canvas.drawRect(left,mHeight/2-height, right,mHeight/2, paint);
+                        String text = String.valueOf(snr.intValue());
+                        mTextPaint.getTextBounds(text,0,text.length(), mTextBounds);
+                        canvas.drawText(text, (float) (left+(CHART_WIDTH*0.8-mTextBounds.width())/2),mHeight/2-height,mTextPaint);
+                    }else {
+                        canvas.drawRect(left,mHeight/2, right,mHeight/2-height, paint);
+                        String text = String.valueOf(snr.intValue());
+                        mTextPaint.getTextBounds(text,0,text.length(), mTextBounds);
+                        canvas.drawText(text, (float) (left+(CHART_WIDTH*0.8-mTextBounds.width())/2),mHeight/2-height+mTextBounds.height(),mTextPaint);
+                    }
+                    canvas.drawLine(left,mHeight/2,left+CHART_WIDTH,mHeight/2,mPaintGrey);
                 }
-                float height=snr/MAX_VALUE*mHeight/2;
-                float left = mWidth - CHART_WIDTH * (size - i);
-                float right = (float) (left + CHART_WIDTH * 0.8);
-                if(snr>0){
-                    canvas.drawRect(left,mHeight/2-height, right,mHeight/2, paint);
-                    String text = String.valueOf(snr.intValue());
-                    mTextPaint.getTextBounds(text,0,text.length(), mTextBounds);
-                    canvas.drawText(text, (float) (left+(CHART_WIDTH*0.8-mTextBounds.width())/2),mHeight/2-height,mTextPaint);
-                }else {
-                    canvas.drawRect(left,mHeight/2, right,mHeight/2-height, paint);
-                    String text = String.valueOf(snr.intValue());
-                    mTextPaint.getTextBounds(text,0,text.length(), mTextBounds);
-                    canvas.drawText(text, (float) (left+(CHART_WIDTH*0.8-mTextBounds.width())/2),mHeight/2-height+mTextBounds.height(),mTextPaint);
-                }
-                canvas.drawLine(left,mHeight/2,left+CHART_WIDTH,mHeight/2,mPaintGrey);
+                onDrawWidth=CHART_WIDTH*size;
             }
-            onDrawWidth=CHART_WIDTH*size;
         }
-
     }
 
     private float downX;
@@ -161,8 +161,14 @@ public class SNRChartView extends View {
     }
 
     public void updateChartView(float snr){
-        mSnrs.add(snr);
-        postInvalidate();
+        synchronized (this){
+            int size = mSnrs.size();
+            if(size>150){
+                mSnrs.remove(0);
+            }
+            mSnrs.add(snr);
+            postInvalidate();
+        }
     }
 
     private void showLog(String msg){

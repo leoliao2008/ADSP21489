@@ -796,11 +796,6 @@ public class MainActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
         isDisplaySnr.set(mSharedPreferences.getBoolean(IS_DISPLAY_SNR,false));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
         clearAllRequest();
         if(isDisplaySnr.get()){
             mHandler.post(mRunnable_requestSnr);
@@ -809,6 +804,8 @@ public class MainActivity extends BaseActivity {
             }
         }
     }
+
+
 
     @Override
     protected void onStop() {
