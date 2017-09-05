@@ -491,28 +491,6 @@ public class AdspRequestManager {
             }
         }
     }
-    //************************8月23日新增命令*********************************//
-
-
-    /**
-     * 设置重启次数
-     * @param count 重启次数
-     * @throws ResetCountOutOfLimitException 如果次数不再限定范围内[0-255]，则抛出此异常。
-     */
-    public void setResetCount(int count) throws ResetCountOutOfLimitException{
-        if(count<0||count>=256){
-            throw new ResetCountOutOfLimitException("重启次数设置范围为[0-255]");
-        }
-        sendRequest(formRequest(RequestType.SetResetCount,String.valueOf(count)));
-
-    }
-
-    /**
-     * 查询重启次数
-     */
-    public void checkResetCount(){
-        sendRequest(formRequest(RequestType.CheckResetCount));
-    }
 
     private boolean checkIfIdValidate(byte b){
         boolean isValidate=false;
@@ -552,6 +530,47 @@ public class AdspRequestManager {
         }
 
     }
+
+    //************************8月23日新增命令*********************************//
+
+
+    /**
+     * 设置重启次数
+     * @param count 重启次数
+     * @throws ResetCountOutOfLimitException 如果次数不再限定范围内[0-255]，则抛出此异常。
+     */
+    public void setResetCount(int count) throws ResetCountOutOfLimitException{
+        if(count<0||count>=256){
+            throw new ResetCountOutOfLimitException("重启次数设置范围为[0-255]");
+        }
+        sendRequest(formRequest(RequestType.SetResetCount,String.valueOf(count)));
+
+    }
+
+    /**
+     * 查询重启次数
+     */
+    public void checkResetCount(){
+        sendRequest(formRequest(RequestType.CheckResetCount));
+    }
+
+
+    //***********************9月5日新增功能******************************
+
+    /**
+     * 译码统计功能
+     */
+    public void checkLDPC(){
+        sendRequest(formRequest(RequestType.CheckLDPC));
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -647,6 +666,10 @@ public class AdspRequestManager {
             case CheckResetCount:
                 sb.append("+RSCNT?");
                 break;
+            //**********************9月5日更新******************
+            case CheckLDPC:
+                sb.append("+LDPC?");
+                break;
 
         }
         if(!TextUtils.isEmpty(params)){
@@ -721,6 +744,6 @@ public class AdspRequestManager {
         CheckSfo,CheckCfo,CheckTunerStatus,CheckTaskList,CheckSystemDate,
         ToggleCkfo,SetBaudRate,SetFreq,SetTunes,Toggle1Pps,Check1PpsConfig, StartService,
         PrepareUpgrade, CheckCkfoSetting, CheckFreq, CheckTunes, CheckIfActivate,
-        SetDeviceId, SetResetCount,CheckResetCount;
+        SetDeviceId, SetResetCount,CheckResetCount,CheckLDPC
     }
 }

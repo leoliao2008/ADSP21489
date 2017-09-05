@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.view.Gravity;
@@ -57,6 +59,8 @@ public class MainActivity extends BaseActivity {
     private TextView tv_currentSnr;
     private Handler mHandler;
     private ArrayList<Thread> mThreads=new ArrayList<>();
+    private TextView tv_ldpcSuccessCount;
+    private TextView tv_ldpcFailCount;
     private Runnable mRunnable_requestSnr=new Runnable() {
         @Override
         public void run() {
@@ -83,6 +87,20 @@ public class MainActivity extends BaseActivity {
                     mThreads.remove(Thread.currentThread());
                 }
             }).start();
+        }
+    };
+    private AtomicBoolean isContinueDisplayLDPC=new AtomicBoolean(false);
+    private Runnable mRunnable_requestLdpc=new Runnable() {
+        @Override
+        public void run() {
+            if(!isContinueDisplayLDPC.get()){
+                return;
+            }
+            mRequestManager.checkLDPC();
+            if(!isContinueDisplayLDPC.get()){
+                return;
+            }
+            mHandler.postDelayed(this,1000);
         }
     };
 
@@ -308,6 +326,24 @@ public class MainActivity extends BaseActivity {
                     updateMainConsole("重启次数设置成功： "+count);
                 }
             }
+
+            //***************9月5日新增*******************
+
+            @Override
+            public void checkLDPC(boolean isSuccess, final int successCount, final int failCount, String info) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tv_ldpcSuccessCount.setText(String.valueOf(successCount));
+                        tv_ldpcFailCount.setText(String.valueOf(failCount));
+                    }
+                });
+
+                if(!isSuccess){
+                    updateMainConsole(info);
+                }
+
+            }
         };
     }
 
@@ -335,6 +371,8 @@ public class MainActivity extends BaseActivity {
         mDrawerLayout= (DrawerLayout) findViewById(R.id.drawer_layout);
         mSNRChartView= (SNRChartView) findViewById(R.id.snr_chart_view);
         tv_currentSnr= (TextView) findViewById(R.id.tv_current_snr);
+        tv_ldpcFailCount= (TextView) findViewById(R.id.tv_ldpc_fail_count);
+        tv_ldpcSuccessCount= (TextView) findViewById(R.id.tv_ldpc_success_count);
     }
 
     @Override
@@ -690,6 +728,24 @@ public class MainActivity extends BaseActivity {
                 });
             }
         });
+        //***********************************9月5日新增命令***************************
+        //统计译码成功/失败次数
+        onClick(R.id.btn_check_LCPD, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tv_ldpcFailCount.setText("0");
+                tv_ldpcSuccessCount.setText("0");
+                mHandler.removeCallbacks(mRunnable_requestLdpc);
+                isContinueDisplayLDPC.set(false);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isContinueDisplayLDPC.set(true);
+                        mRunnable_requestLdpc.run();
+                    }
+                },1000);
+            }
+        });
 
         //---------------------------------------------------------------------模拟接收-------------------------------------------------------------------//
         //测试连接成功
@@ -792,11 +848,11 @@ public class MainActivity extends BaseActivity {
 
     }
 
+
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         isDisplaySnr.set(mSharedPreferences.getBoolean(IS_DISPLAY_SNR,false));
-        clearAllRequest();
         if(isDisplaySnr.get()){
             mHandler.post(mRunnable_requestSnr);
             if(!mDrawerLayout.isDrawerOpen(Gravity.END)){
@@ -805,13 +861,14 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-
-
     @Override
     protected void onStop() {
         super.onStop();
-        clearAllRequest();
+        if(isFinishing()){
+            clearAllRequest();
+        }
     }
+
 
     private void clearAllRequest(){
         mHandler.removeCallbacks(mRunnable_requestSnr);
@@ -821,6 +878,11 @@ public class MainActivity extends BaseActivity {
             thread.interrupt();
         }
         mThreads.clear();
+
+        isContinueDisplayLDPC.set(false);
+        mHandler.removeCallbacks(mRunnable_requestLdpc);
+
+
     }
 
     private void sendAck(String ack){
@@ -867,9 +929,15 @@ public class MainActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mMainConsoleContents.add(consoleItem);
-                mMainConsoleAdapter.notifyDataSetChanged();
-                mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                synchronized (mMainConsoleContents){
+                    int size = mMainConsoleContents.size();
+                    if(size>50){
+                        mMainConsoleContents.remove(0);
+                    }
+                    mMainConsoleContents.add(consoleItem);
+                    mMainConsoleAdapter.notifyDataSetChanged();
+                    mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                }
             }
         });
     }
@@ -878,9 +946,16 @@ public class MainActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mSubConsoleContents.add(consoleItem);
-                mSubConsoleAdapter.notifyDataSetChanged();
-                mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                synchronized (mSubConsoleContents){
+                    int size = mSubConsoleContents.size();
+                    if(size>50){
+                        mSubConsoleContents.remove(0);
+                    }
+                    mSubConsoleContents.add(consoleItem);
+                    mSubConsoleAdapter.notifyDataSetChanged();
+                    mSubConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                }
+
             }
         });
     }

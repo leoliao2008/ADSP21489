@@ -337,4 +337,14 @@ public abstract class AckCallBack {
     public void checkResetCount(boolean isSuccess, int count) {
 
     }
+
+    /**
+     * 发起译码统计请求后，接收到的回调
+     * @param isSuccess 请求是否成功执行
+     * @param successCount 译码成功次数
+     * @param failCount 译码失败次数
+     * @param info 附加信息，可以直接反映请求是否成功及统计数据/失败及原因。
+     */
+    public void checkLDPC(boolean isSuccess, int successCount, int failCount,String info) {
+    }
 }

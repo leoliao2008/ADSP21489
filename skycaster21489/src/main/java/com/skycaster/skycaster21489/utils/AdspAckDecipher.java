@@ -4,6 +4,8 @@ import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.data.ServiceCode;
 
+import java.util.regex.Pattern;
+
 /**
  * 用来解析ADSP应答的类。
  * Created by 廖华凯 on 2017/3/28.
@@ -385,6 +387,15 @@ public class AdspAckDecipher {
                 break;
             case "RSCNT":
                 ackCallBack.checkResetCount(true,Integer.valueOf(acks[1]));
+                break;
+            //*********************9月5日更新*************************
+            case "LDPC":
+                String[] split = acks[1].trim().split(Pattern.quote(","));
+                if(split.length==2){
+                    ackCallBack.checkLDPC(true,Integer.valueOf(split[0]),Integer.valueOf(split[1]),"译码统计结果：成功次数 "+split[0]+" ,失败次数 "+split[1]+" 。");
+                }else {
+                    ackCallBack.checkLDPC(false,-1,-1,"译码统计请求返回数据格式不符合协议："+new String(buffer));
+                }
                 break;
             default:
                 ackCallBack.onError("数据格式不符合协议，解析失败。");
