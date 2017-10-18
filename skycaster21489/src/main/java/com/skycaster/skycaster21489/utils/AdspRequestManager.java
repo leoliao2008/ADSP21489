@@ -567,13 +567,6 @@ public class AdspRequestManager {
 
 
 
-
-
-
-
-
-
-
     @NonNull
     private synchronized byte[] formRequest(RequestType requestType, @Nullable String params){
         StringBuilder sb=new StringBuilder();

@@ -979,7 +979,7 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.menu_choose_serial_port:
+            case R.id.menu_set_cd_radio_serial_port:
                 AlertDialogUtil.showSerialPortSelection(this);
                 break;
             case android.R.id.home:

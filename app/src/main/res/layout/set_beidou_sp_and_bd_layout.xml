@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorRiceWhite">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择北斗芯片串口"
+            android:padding="@dimen/padding_button_text_large"
+            android:textSize="@dimen/text_size_title"
+            android:textColor="@color/colorWhite"
+            android:layout_margin="1dp"
+            android:background="@drawable/shape_navi_item"
+            />
+        <LinearLayout
+            android:id="@+id/config_container_serial_port"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                style="@style/MyTextViewStyle"
+                />
+            <Spinner
+                android:id="@+id/config_spin_sp_list"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/config_container_serial_bd_rate"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                style="@style/MyTextViewStyle"
+                android:text="波特率"
+                />
+            <Spinner
+                android:id="@+id/config_spin_bd_rate_list"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/config_btn_confirm"
+                android:text="连接"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_config"
+                android:background="@drawable/shape_navi_item"
+                android:textColor="@color/selector_navi_text_color"
+                android:layout_margin="1dp"
+                android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/config_btn_cancel"
+                android:text="取消"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_navi_item"
+                android:textSize="@dimen/text_size_config"
+                android:layout_margin="1dp"
+                android:textColor="@color/selector_navi_text_color"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

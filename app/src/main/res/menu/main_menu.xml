@@ -8,9 +8,14 @@
           app:showAsAction="always"/>
 
 
-    <item android:id="@+id/menu_choose_serial_port"
+    <item android:id="@+id/menu_set_cd_radio_serial_port"
           android:icon="@android:drawable/ic_secure"
-          android:title="重新选择串口"
+          android:title="设置CDRadio芯片串口"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_set_beidou_chip_serial_port"
+          android:icon="@android:drawable/ic_secure"
+          android:title="设置北斗芯片串口"
           app:showAsAction="never"/>
 
     <item android:id="@+id/menu_display_snr_chart_view"

@@ -49,7 +49,7 @@ public class AlertDialogUtil {
 
     public static void showSerialPortSelection(final AdspActivity activity){
         if(activity instanceof MainActivity){
-            View rootView=View.inflate(activity, R.layout.set_sp_and_bd_layout,null);
+            View rootView=View.inflate(activity, R.layout.set_cd_radio_sp_and_bd_layout,null);
             Spinner spn_serialPorts= (Spinner) rootView.findViewById(R.id.config_spin_sp_list);
             Spinner spn_baudRates= (Spinner) rootView.findViewById(R.id.config_spin_bd_rate_list);
             Button btn_confirm= (Button) rootView.findViewById(R.id.config_btn_confirm);

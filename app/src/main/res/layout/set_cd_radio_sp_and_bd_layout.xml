@@ -14,7 +14,7 @@
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="选择串口"
+            android:text="选择CDRadio串口"
             android:padding="@dimen/padding_button_text_large"
             android:textSize="@dimen/text_size_title"
             android:textColor="@color/colorWhite"
