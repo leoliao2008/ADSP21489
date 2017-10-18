@@ -1,5 +1,6 @@
 package com.skycaster.adsp21489.activity;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -9,13 +10,14 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,7 +39,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,55 +55,45 @@ public class MainActivity extends BaseActivity {
     private ConsoleAdapter mSubConsoleAdapter;
     private AtomicBoolean isDisplaySnr=new AtomicBoolean(false);
     private SharedPreferences mSharedPreferences;
-    private DrawerLayout mDrawerLayout;
     private SNRChartView mSNRChartView;
     private TextView tv_currentSnr;
     private Handler mHandler;
-    private ArrayList<Thread> mThreads=new ArrayList<>();
     private TextView tv_ldpcSuccessCount;
     private TextView tv_ldpcFailCount;
+    private AtomicBoolean isContinueCheckLDPC =new AtomicBoolean(false);
+    private FrameLayout mSNRContainer;
     private Runnable mRunnable_requestSnr=new Runnable() {
         @Override
         public void run() {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    mThreads.add(Thread.currentThread());
-                    if(isPortOpen()){
-                        mRequestManager.checkSnrRate();
-                    }else {
-                        clearAllRequest();
-                        isDisplaySnr.set(false);
-                        mSharedPreferences.edit().putBoolean(IS_DISPLAY_SNR,false).apply();
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                supportInvalidateOptionsMenu();
-                            }
-                        });
-                    }
-                    if(!Thread.currentThread().isInterrupted()&&isDisplaySnr.get()){
-                        mHandler.postDelayed(mRunnable_requestSnr,1000);
-                    }
-                    mThreads.remove(Thread.currentThread());
-                }
-            }).start();
+            if(isPortOpen()){
+                mRequestManager.checkSnrRate();
+            }else {
+                clearAllRequest();
+                isDisplaySnr.set(false);
+                mSharedPreferences.edit().putBoolean(IS_DISPLAY_SNR,false).apply();
+                supportInvalidateOptionsMenu();
+                showToast("串口没有打开，请先打开串口。");
+                toggleSNRContainer(false);
+            }
+            if(isDisplaySnr.get()){
+                mHandler.postDelayed(this,1500);
+            }
         }
     };
-    private AtomicBoolean isContinueDisplayLDPC=new AtomicBoolean(false);
-    private Runnable mRunnable_requestLdpc=new Runnable() {
+    private Runnable mRunnable_checkLDPC =new Runnable() {
         @Override
         public void run() {
-            if(!isContinueDisplayLDPC.get()){
+            if(!isContinueCheckLDPC.get()){
                 return;
             }
             mRequestManager.checkLDPC();
-            if(!isContinueDisplayLDPC.get()){
+            if(!isContinueCheckLDPC.get()){
                 return;
             }
-            mHandler.postDelayed(this,1000);
+            mHandler.postDelayed(this,1500);
         }
     };
+    private LinearLayout.LayoutParams mSNRContainerLayoutParams;
 
 
     @NonNull
@@ -368,11 +359,11 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         mMainConsole = (ListView) findViewById(R.id.main_console);
         mSubConsole= (ListView) findViewById(R.id.sub_console);
-        mDrawerLayout= (DrawerLayout) findViewById(R.id.drawer_layout);
         mSNRChartView= (SNRChartView) findViewById(R.id.snr_chart_view);
         tv_currentSnr= (TextView) findViewById(R.id.tv_current_snr);
         tv_ldpcFailCount= (TextView) findViewById(R.id.tv_ldpc_fail_count);
         tv_ldpcSuccessCount= (TextView) findViewById(R.id.tv_ldpc_success_count);
+        mSNRContainer= (FrameLayout) findViewById(R.id.snr_view_container);
     }
 
     @Override
@@ -391,6 +382,9 @@ public class MainActivity extends BaseActivity {
         mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);
 
         mHandler=new Handler();
+
+        //获取snr线形图的布局参数用来产生动画
+        mSNRContainerLayoutParams = (LinearLayout.LayoutParams) mSNRContainer.getLayoutParams();
 
 
         //初始化main console
@@ -735,15 +729,23 @@ public class MainActivity extends BaseActivity {
             public void onClick(View v) {
                 tv_ldpcFailCount.setText("0");
                 tv_ldpcSuccessCount.setText("0");
-                mHandler.removeCallbacks(mRunnable_requestLdpc);
-                isContinueDisplayLDPC.set(false);
+                isContinueCheckLDPC.set(false);
+                mHandler.removeCallbacks(mRunnable_checkLDPC);
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        isContinueDisplayLDPC.set(true);
-                        mRunnable_requestLdpc.run();
+                        isContinueCheckLDPC.set(true);
+                        mRunnable_checkLDPC.run();
                     }
-                },1000);
+                },1500);
+            }
+        });
+
+        onClick(R.id.btn_stop_LCPD, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isContinueCheckLDPC.set(false);
+                mHandler.removeCallbacks(mRunnable_checkLDPC);
             }
         });
 
@@ -855,9 +857,7 @@ public class MainActivity extends BaseActivity {
         isDisplaySnr.set(mSharedPreferences.getBoolean(IS_DISPLAY_SNR,false));
         if(isDisplaySnr.get()){
             mHandler.post(mRunnable_requestSnr);
-            if(!mDrawerLayout.isDrawerOpen(Gravity.END)){
-                mDrawerLayout.openDrawer(Gravity.END);
-            }
+            toggleSNRContainer(true);
         }
     }
 
@@ -872,17 +872,8 @@ public class MainActivity extends BaseActivity {
 
     private void clearAllRequest(){
         mHandler.removeCallbacks(mRunnable_requestSnr);
-        Iterator<Thread> iterator = mThreads.iterator();
-        while (iterator.hasNext()){
-            Thread thread = iterator.next();
-            thread.interrupt();
-        }
-        mThreads.clear();
-
-        isContinueDisplayLDPC.set(false);
-        mHandler.removeCallbacks(mRunnable_requestLdpc);
-
-
+        isContinueCheckLDPC.set(false);
+        mHandler.removeCallbacks(mRunnable_checkLDPC);
     }
 
     private void sendAck(String ack){
@@ -931,7 +922,7 @@ public class MainActivity extends BaseActivity {
             public void run() {
                 synchronized (mMainConsoleContents){
                     int size = mMainConsoleContents.size();
-                    if(size>50){
+                    if(size>10){
                         mMainConsoleContents.remove(0);
                     }
                     mMainConsoleContents.add(consoleItem);
@@ -948,7 +939,7 @@ public class MainActivity extends BaseActivity {
             public void run() {
                 synchronized (mSubConsoleContents){
                     int size = mSubConsoleContents.size();
-                    if(size>50){
+                    if(size>10){
                         mSubConsoleContents.remove(0);
                     }
                     mSubConsoleContents.add(consoleItem);
@@ -1001,13 +992,9 @@ public class MainActivity extends BaseActivity {
             case R.id.menu_display_snr_chart_view:
                 clearAllRequest();
                 if(isDisplaySnr.get()){
-                    if(mDrawerLayout.isDrawerOpen(Gravity.END)){
-                        mDrawerLayout.closeDrawers();
-                    }
+                    toggleSNRContainer(false);
                 }else {
-                    if(!mDrawerLayout.isDrawerOpen(Gravity.END)){
-                        mDrawerLayout.openDrawer(Gravity.END);
-                    }
+                    toggleSNRContainer(true);
                     mHandler.post(mRunnable_requestSnr);
                 }
                 isDisplaySnr.set(!isDisplaySnr.get());
@@ -1028,5 +1015,27 @@ public class MainActivity extends BaseActivity {
     private void clearSubConsole() {
         mSubConsoleContents.clear();
         mSubConsoleAdapter.notifyDataSetChanged();
+    }
+
+    private void toggleSNRContainer(boolean isShow){
+        float start;
+        float end;
+        if(isShow){
+            start=0;
+            end=2;
+        }else {
+            start=2;
+            end=0;
+        }
+        ValueAnimator animator=ValueAnimator.ofFloat(start,end).setDuration(500);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mSNRContainerLayoutParams.weight=(float) animation.getAnimatedValue();
+                mSNRContainer.setLayoutParams(mSNRContainerLayoutParams);
+                mSNRContainer.requestLayout();
+            }
+        });
+        animator.start();
     }
 }

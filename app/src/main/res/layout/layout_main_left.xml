@@ -202,7 +202,12 @@
                 android:id="@+id/btn_check_LCPD"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取译码统计"/>
+                android:text="启动译码统计"/>
+            <Button
+                android:id="@+id/btn_stop_LCPD"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="停止译码统计"/>
             <Button
                 android:id="@+id/btn_prepare_upgrade"
                 android:layout_width="match_parent"

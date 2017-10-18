@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name=".base.BaseApplication"
-        android:persistent="true">
+        android:persistent="true"
+        android:largeHeap="true">
 
         <activity
             android:name=".activity.MainActivity"

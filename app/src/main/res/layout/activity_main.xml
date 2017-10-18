@@ -116,6 +116,28 @@
             android:fastScrollEnabled="true"
             />
 
+        <FrameLayout
+            android:id="@+id/snr_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0"
+            >
+            <com.skycaster.adsp21489.customized.SNRChartView
+                android:id="@+id/snr_chart_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+            <TextView
+                android:id="@+id/tv_current_snr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SNR:25.50"
+                android:textColor="@color/colorWhite"
+                android:textSize="15sp"
+                android:background="@drawable/shape_navi_item"/>
+
+        </FrameLayout>
+
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -168,44 +190,13 @@
 
         </android.support.v7.widget.CardView>
 
-
-        <android.support.v4.widget.DrawerLayout
-            android:id="@+id/drawer_layout"
+        <ListView
+            android:id="@+id/sub_console"
             android:layout_height="0dp"
             android:layout_width="match_parent"
-            android:layout_weight="1.5">
-
-            <ListView
-                android:id="@+id/sub_console"
-                android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:background="@color/colorRiceWhite"
-                android:fastScrollEnabled="true"
-                />
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="end"
-                >
-                <com.skycaster.adsp21489.customized.SNRChartView
-                    android:id="@+id/snr_chart_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    />
-                <TextView
-                    android:id="@+id/tv_current_snr"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="SNR:25.50"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="18sp"
-                    android:background="@drawable/shape_navi_item"/>
-
-            </FrameLayout>
-
-
-        </android.support.v4.widget.DrawerLayout>
+            android:layout_weight="1.5"
+            android:background="@color/colorRiceWhite"
+            android:fastScrollEnabled="true"/>
 
 
     </LinearLayout>

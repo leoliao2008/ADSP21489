@@ -26,12 +26,12 @@ public class AdspAckDecipher {
 
 
     public synchronized void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
-        showLog("data len="+len);
+//        showLog("data len="+len);
         if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
             mActivity.onGetRawData(buffer,len);
         }
         for(int i=0;i<len;i++){
-            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
+//            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
             if(!isAckConfirmed){
                 showLog("state:not confirmed");
                 if(buffer[i]=='+'){
