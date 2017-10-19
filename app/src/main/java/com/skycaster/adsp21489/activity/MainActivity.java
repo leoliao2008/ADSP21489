@@ -27,6 +27,7 @@ import com.skycaster.adsp21489.base.BaseActivity;
 import com.skycaster.adsp21489.bean.ConsoleItem;
 import com.skycaster.adsp21489.customized.SNRChartView;
 import com.skycaster.adsp21489.data.ConsoleItemType;
+import com.skycaster.adsp21489.presenter.BeidouDataPresenter;
 import com.skycaster.adsp21489.util.AlertDialogUtil;
 import com.skycaster.skycaster21489.abstr.AckCallBack;
 import com.skycaster.skycaster21489.data.ServiceCode;
@@ -94,6 +95,7 @@ public class MainActivity extends BaseActivity {
         }
     };
     private LinearLayout.LayoutParams mSNRContainerLayoutParams;
+    private BeidouDataPresenter mBeidouPresenter;
 
 
     @NonNull
@@ -409,6 +411,8 @@ public class MainActivity extends BaseActivity {
         mSubConsole.setAdapter(mSubConsoleAdapter);
 
         mRequestManager = getRequestManager();
+
+        mBeidouPresenter=new BeidouDataPresenter(this);
 
     }
 
@@ -867,6 +871,7 @@ public class MainActivity extends BaseActivity {
         if(isFinishing()){
             clearAllRequest();
         }
+        mBeidouPresenter.onStop();
     }
 
 
@@ -912,23 +917,22 @@ public class MainActivity extends BaseActivity {
         updateSubConsole(new ConsoleItem(Arrays.copyOf(buffer,len),ConsoleItemType.ITEM_TYPE_ACK));
     }
 
-    private void updateMainConsole(String msg) {
+    public void updateMainConsole(String msg) {
+        showLog("updateMainConsole:"+msg);
         updateMainConsole(new ConsoleItem(msg.getBytes(),ConsoleItemType.ITEM_TYPE_RESULT));
     }
 
     private void updateMainConsole(final ConsoleItem consoleItem) {
-        runOnUiThread(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mMainConsoleContents){
-                    int size = mMainConsoleContents.size();
-                    if(size>10){
-                        mMainConsoleContents.remove(0);
-                    }
-                    mMainConsoleContents.add(consoleItem);
-                    mMainConsoleAdapter.notifyDataSetChanged();
-                    mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
+                int size = mMainConsoleContents.size();
+                if(size>10){
+                    mMainConsoleContents.remove(0);
                 }
+                mMainConsoleContents.add(consoleItem);
+                mMainConsoleAdapter.notifyDataSetChanged();
+                mMainConsole.smoothScrollToPosition(Integer.MAX_VALUE);
             }
         });
     }
@@ -972,15 +976,28 @@ public class MainActivity extends BaseActivity {
         }else {
             itemDisplayChartView.setIcon(R.drawable.ic_tonality_grey600_48dp);
         }
+        mBeidouPresenter.onCreateOptionsMenu(menu);
         return true;
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        mBeidouPresenter.onOptionsItemSelected(item);
         switch (item.getItemId()){
             case R.id.menu_set_cd_radio_serial_port:
-                AlertDialogUtil.showSerialPortSelection(this);
+                AlertDialogUtil.showSerialPortSelection(
+                        this,
+                        "设置CDRadio串口",
+                        getSerialPortPath(),
+                        getBaudRate(),
+                        new AlertDialogUtil.SerialPortParamsListener() {
+                            @Override
+                            public void onParamsSet(String path, int baudRate) {
+                                openSerialPort(path,baudRate);
+                            }
+                        }
+                );
                 break;
             case android.R.id.home:
                 confirmBackPress();
@@ -1038,4 +1055,6 @@ public class MainActivity extends BaseActivity {
         });
         animator.start();
     }
+
+
 }

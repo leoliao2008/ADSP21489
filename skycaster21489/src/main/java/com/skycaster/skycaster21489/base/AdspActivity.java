@@ -53,6 +53,10 @@ public abstract class AdspActivity extends AppCompatActivity {
     private AdspRequestManager mRequestManager;
     private boolean isSaveRawData;
 
+    public SharedPreferences getSharedPreferences() {
+        return mSharedPreferences;
+    }
+
     /**
      * 获得AdspRequestManager实例。AdspRequestManager已在AdspActivity的onCreate()方法中被初始化，可以通过这个
      * 方法直接获取该实例。

@@ -67,7 +67,7 @@ public class SerialPort {
         mFd =open(device.getAbsolutePath(), baudrate, flags);
         if (mFd == null) {
             Log.e(TAG, "native open returns null");
-            throw new IOException();
+            throw new IOException("native open returns null");
         }else {
             Log.e(TAG, "open device success!  "+mFd.toString());
         }

@@ -27,7 +27,7 @@
             </intent-filter>
 
         </activity>
-        <service android:name=".model.SerialPortModel$SerialPortService"/>
+        <service android:name=".service.SerialPortService"/>
     </application>
 
 </manifest>

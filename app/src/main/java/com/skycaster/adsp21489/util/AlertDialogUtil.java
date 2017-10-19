@@ -3,12 +3,14 @@ package com.skycaster.adsp21489.util;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -22,7 +24,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.skycaster.adsp21489.R;
-import com.skycaster.adsp21489.activity.MainActivity;
 import com.skycaster.adsp21489.adapter.FilesBrowserAdapter;
 import com.skycaster.skycaster21489.base.AdspActivity;
 import com.skycaster.skycaster21489.data.AdspBaudRates;
@@ -47,64 +48,44 @@ public class AlertDialogUtil {
     private static FilesBrowserAdapter filesBrowserAdapter;
     private static ServiceCode mServiceCode;
 
-    public static void showSerialPortSelection(final AdspActivity activity){
-        if(activity instanceof MainActivity){
-            View rootView=View.inflate(activity, R.layout.set_cd_radio_sp_and_bd_layout,null);
-            Spinner spn_serialPorts= (Spinner) rootView.findViewById(R.id.config_spin_sp_list);
-            Spinner spn_baudRates= (Spinner) rootView.findViewById(R.id.config_spin_bd_rate_list);
-            Button btn_confirm= (Button) rootView.findViewById(R.id.config_btn_confirm);
-            Button btn_cancel= (Button) rootView.findViewById(R.id.config_btn_cancel);
+    public static void showSerialPortSelection(
+            final Context context,
+            @Nullable String title,
+            @Nullable String defaultPath,
+            int defaultBaudRate,
+            final SerialPortParamsListener listener){
+        View rootView=View.inflate(context, R.layout.alert_dialog_set_cd_radio_sp,null);
+        TextView tv_title= (TextView) rootView.findViewById(R.id.config_tv_title);
+        Spinner spn_serialPorts= (Spinner) rootView.findViewById(R.id.config_spin_sp_list);
+        Spinner spn_baudRates= (Spinner) rootView.findViewById(R.id.config_spin_bd_rate_list);
+        Button btn_confirm= (Button) rootView.findViewById(R.id.config_btn_confirm);
+        Button btn_cancel= (Button) rootView.findViewById(R.id.config_btn_cancel);
 
-            final String[] paths=new SerialPortFinder().getAllDevicesPath();
-            if(paths!=null&&paths.length>0){
-                ArrayAdapter<String> serialPortAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, paths);
-                serialPortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spn_serialPorts.setAdapter(serialPortAdapter);
-                selectedPath =activity.getSerialPortPath();
-                selectedPathIndex=0;
-                if(!TextUtils.isEmpty(selectedPath)){
-                    for(int i=0;i<paths.length;i++){
-                        if(selectedPath.equals(paths[i])){
-                            selectedPathIndex=i;
-                            break;
-                        }
+        if(!TextUtils.isEmpty(title)){
+            tv_title.setText(title);
+        }
+
+        final String[] paths=new SerialPortFinder().getAllDevicesPath();
+        if(paths!=null&&paths.length>0){
+            ArrayAdapter<String> serialPortAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, paths);
+            serialPortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spn_serialPorts.setAdapter(serialPortAdapter);
+            selectedPath =defaultPath;
+            selectedPathIndex=0;
+            if(!TextUtils.isEmpty(selectedPath)){
+                for(int i=0;i<paths.length;i++){
+                    if(selectedPath.equals(paths[i])){
+                        selectedPathIndex=i;
+                        break;
                     }
                 }
-                spn_serialPorts.setSelection(selectedPathIndex);
-                spn_serialPorts.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        selectedPathIndex=position;
-                        selectedPath =paths[selectedPathIndex];
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
-            }else {
-                activity.showHint("无法获得打开串口的权限。");
             }
-
-            final String[] baudRates = activity.getResources().getStringArray(R.array.baudrates_value);
-            ArrayAdapter<String> baudRateAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, baudRates);
-            baudRateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spn_baudRates.setAdapter(baudRateAdapter);
-            selectedBaudRate =activity.getBaudRate();
-            selectedBaudRateIndex=0;
-            for(int i=0;i<baudRates.length;i++){
-                if(selectedBaudRate ==Integer.parseInt(baudRates[i])){
-                    selectedBaudRateIndex=i;
-                    break;
-                }
-            }
-            spn_baudRates.setSelection(selectedBaudRateIndex);
-            spn_baudRates.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            spn_serialPorts.setSelection(selectedPathIndex);
+            spn_serialPorts.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    selectedBaudRateIndex=position;
-                    selectedBaudRate =Integer.parseInt(baudRates[selectedBaudRateIndex]);
+                    selectedPathIndex=position;
+                    selectedPath =paths[selectedPathIndex];
                 }
 
                 @Override
@@ -112,32 +93,66 @@ public class AlertDialogUtil {
 
                 }
             });
-
-            btn_confirm.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(selectedPath!=null){
-                        activity.openSerialPort(selectedPath, selectedBaudRate);
-                        mAlertDialog.dismiss();
-                    }else {
-                        ToastUtil.showToast("串口路径不能为空。");
-                    }
-
-                }
-            });
-
-            btn_cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mAlertDialog.dismiss();
-                }
-            });
-
-            AlertDialog.Builder builder=new AlertDialog.Builder(activity);
-            mAlertDialog = builder.setView(rootView).create();
-            mAlertDialog.show();
+        }else {
+            ToastUtil.showToast("无法获得打开串口的权限。");
         }
 
+        final String[] baudRates = context.getResources().getStringArray(R.array.baudrates_value);
+        ArrayAdapter<String> baudRateAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, baudRates);
+        baudRateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spn_baudRates.setAdapter(baudRateAdapter);
+        selectedBaudRate =defaultBaudRate;
+        selectedBaudRateIndex=0;
+        for(int i=0;i<baudRates.length;i++){
+            if(selectedBaudRate ==Integer.parseInt(baudRates[i])){
+                selectedBaudRateIndex=i;
+                break;
+            }
+        }
+        spn_baudRates.setSelection(selectedBaudRateIndex);
+        spn_baudRates.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedBaudRateIndex=position;
+                selectedBaudRate =Integer.parseInt(baudRates[selectedBaudRateIndex]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(selectedPath!=null){
+                    mAlertDialog.dismiss();
+                    Log.e(getClass().getSimpleName(),"confirm ="+selectedPath+", "+selectedBaudRate);
+                    listener.onParamsSet(selectedPath,selectedBaudRate);
+
+                }else {
+                    ToastUtil.showToast("串口路径不能为空。");
+                }
+
+            }
+        });
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAlertDialog.dismiss();
+            }
+        });
+
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        mAlertDialog = builder.setView(rootView).create();
+        mAlertDialog.show();
+
+    }
+
+    public interface SerialPortParamsListener{
+        void onParamsSet(String path,int baudRate);
     }
 
     public static void showSetBaudRateDialog(final AdspActivity context) {
