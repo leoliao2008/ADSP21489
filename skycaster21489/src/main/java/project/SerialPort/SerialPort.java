@@ -59,8 +59,7 @@ public class SerialPort {
                 if(e.getMessage()!=null){
                     Log.e(TAG,e.getMessage());
                 }
-
-                throw new SecurityException();
+                throw new SecurityException(e.getMessage());
             }
         }
 
@@ -90,7 +89,10 @@ public class SerialPort {
      * @return
      */
     public InputStream getInputStream() {
-        return mFileInputStream;
+        if(mFileInputStream!=null){
+            return mFileInputStream;
+        }
+        return null;
     }
 
 
@@ -98,7 +100,12 @@ public class SerialPort {
      * gain access to the output stream of the serial port.
      * @return
      */
-    public OutputStream getOutputStream() {return mFileOutputStream;}
+    public OutputStream getOutputStream() {
+        if(mFileOutputStream!=null){
+            return mFileOutputStream;
+        }
+        return null;
+    }
 
 
     private native FileDescriptor open(String path,int baudrate,int flag);

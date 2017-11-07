@@ -25,5 +25,26 @@
           app:showAsAction="never"/>
 
 
+    <item android:id="@+id/menu_turn_on_cd_radio"
+          android:icon="@android:drawable/ic_secure"
+          android:title="GPIO 打开CDRadio模块"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_turn_off_cd_radio"
+          android:icon="@android:drawable/ic_secure"
+          android:title="GPIO 关闭CDRadio模块"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_cd_radio_to_beidou"
+          android:icon="@android:drawable/ic_secure"
+          android:title="GPIO CDRadio串口连接Beidou"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_cd_radio_to_app"
+          android:icon="@android:drawable/ic_secure"
+          android:title="GPIO CDRadio串口连接本机"
+          app:showAsAction="never"/>
+
+
 
 </menu>

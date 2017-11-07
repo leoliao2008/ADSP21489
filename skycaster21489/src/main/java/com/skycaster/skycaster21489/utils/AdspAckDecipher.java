@@ -27,9 +27,14 @@ public class AdspAckDecipher {
 
     public synchronized void onReceiveDate(byte[] buffer,int len,AckCallBack ackCallBack){
 //        showLog("data len="+len);
-        if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
-            mActivity.onGetRawData(buffer,len);
+        try {
+            if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
+                mActivity.onGetRawData(buffer,len);
+            }
+        }catch (NullPointerException e){
+            mActivity.showHint(e.getMessage());
         }
+
         for(int i=0;i<len;i++){
 //            showLog("------receive byte:0x"+String.format("%02X",buffer[i])+" == "+String.valueOf((char)buffer[i]));
             if(!isAckConfirmed){
@@ -106,7 +111,7 @@ public class AdspAckDecipher {
                         break;
                     case "CLOSE":
                         sb.append("接收机退出工作状态：成功。");
-                        ackCallBack.inactivate(true,sb.toString());
+                        ackCallBack.deactivate(true,sb.toString());
                         break;
                     default:
                         sb.append("接收机进入/退出工作状态返回参数错误,原因：参数不符合协议，解析失败。");
@@ -122,7 +127,7 @@ public class AdspAckDecipher {
                         break;
                     case "CLOSE":
                         sb.append("接收机退出工作状态：失败。");
-                        ackCallBack.inactivate(false,sb.toString());
+                        ackCallBack.deactivate(false,sb.toString());
                         break;
                     default:
                         sb.append("接收机进入/退出工作状态返回参数错误,原因：参数不符合协议，解析失败。");

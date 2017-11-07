@@ -31,6 +31,7 @@
         android:layout_height="wrap_content"
         android:maxLines="10"
         android:maxLength="81"
+        android:textSize="@dimen/sp_15"
         android:text="temp"/>
 
 </LinearLayout>

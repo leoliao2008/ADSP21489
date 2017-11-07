@@ -3,6 +3,7 @@ package com.skycaster.adsp21489.service;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -63,9 +64,11 @@ public class SerialPortService extends Service {
                                 break;
                             }
                             try {
-                                int read = in.read(temp);
-                                if(mCallBack!=null){
-                                    mCallBack.onDataReceived(Arrays.copyOfRange(temp,0,read));
+                                if(in.available()>0){
+                                    int read = in.read(temp);
+                                    if(mCallBack!=null){
+                                        mCallBack.onDataReceived(Arrays.copyOfRange(temp,0,read));
+                                    }
                                 }
                             } catch (IOException e) {
                                 handlePortException(e);
@@ -84,6 +87,7 @@ public class SerialPortService extends Service {
                         }
                         serialPort.close();
                         serialPort=null;
+                        ToastUtil.showToast("串口已关闭。");
                     }
                     //关灯：）
                     stopForeground(true);
@@ -95,8 +99,19 @@ public class SerialPortService extends Service {
                 }
             }
         });
-        mThread.start();
+        //保证SerialPortServiceBinder 返回以后再跑这个线程，保证mCallBack被赋值。
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mThread.start();
+            }
+        },1000);
         return new SerialPortServiceBinder();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
     }
 
     @Override
@@ -109,7 +124,7 @@ public class SerialPortService extends Service {
                 Log.e(getClass().getSimpleName(),e.getMessage());
             }
         }
-        stopSelf();
+        Log.e(getClass().getSimpleName(),"onUnbind");
         return super.onUnbind(intent);
     }
 
@@ -124,7 +139,6 @@ public class SerialPortService extends Service {
                 Log.e(getClass().getSimpleName(),e.getMessage());
             }
         }
-        ToastUtil.showToast("北斗串口已关闭。");
     }
 
     @Override
@@ -153,5 +167,9 @@ public class SerialPortService extends Service {
         public SerialPortService getService() {
             return SerialPortService.this;
         }
+    }
+
+    private void showLog(String msg){
+        Log.e(getClass().getSimpleName(),msg);
     }
 }

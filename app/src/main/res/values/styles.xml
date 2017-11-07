@@ -9,13 +9,12 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="MyTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="MyTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowFullscreen">true</item>
-        <item name="windowActionBar">false</item>
     </style>
 
 
@@ -30,6 +29,43 @@
         <item name="android:textColor">@color/colorBlack</item>
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ActionBarTitleTextAppearance">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/action_bar_title_text_size</item>
+    </style>
+
+    <style name="ActionBarSubTitleTextAppearance">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/action_bar_sub_title_text_size</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="MyButtonStyle1">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/dp_50</item>
+        <item name="android:textSize">@dimen/sp_15</item>
+    </style>
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="解析结果"-->
+    <!--android:textColor="@color/colorBlack"-->
+    <!--android:padding="@dimen/padding_button_text_medium"-->
+    <!--android:background="@color/colorWhite"-->
+    <style name="MyTextViewStyle2">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorBlack</item>
+        <item name="android:padding">@dimen/padding_button_text_medium</item>
+        <item name="android:background">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/sp_15</item>
+    </style>
 
 
 </resources>

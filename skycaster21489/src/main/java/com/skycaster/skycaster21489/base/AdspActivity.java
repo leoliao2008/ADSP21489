@@ -53,7 +53,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     private AdspRequestManager mRequestManager;
     private boolean isSaveRawData;
 
-    public SharedPreferences getSharedPreferences() {
+    public SharedPreferences getMySharedPreferences() {
         return mSharedPreferences;
     }
 
@@ -109,7 +109,7 @@ public abstract class AdspActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRequestManager=AdspRequestManager.getInstance(this);
-        mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);
+        mSharedPreferences = getSharedPreferences("ADSP21489Config", Context.MODE_PRIVATE);
         mSerialPortPath=mSharedPreferences.getString(SERIAL_PORT_PATH,setDefaultSerialPortPath());
         mBaudRate=mSharedPreferences.getInt(BAUD_RATE,setDefaultBaudRate());
         mFreq=mSharedPreferences.getInt(FREQ,10510);
@@ -270,9 +270,11 @@ public abstract class AdspActivity extends AppCompatActivity {
             public void run() {
                 while (isPortOpen){
                     try {
-                        final int len = mInputStream.read(mAckContainer);
-                        if(len>0){
-                            onReceivePortData(mAckContainer.clone(),len);
+                        if(mInputStream.available()>0){
+                            final int len = mInputStream.read(mAckContainer);
+                            if(len>0&&isPortOpen){
+                                onReceivePortData(mAckContainer.clone(),len);
+                            }
                         }
                     } catch (IOException e) {
                         showHint(e.toString());
@@ -290,6 +292,12 @@ public abstract class AdspActivity extends AppCompatActivity {
      * @param len 缓存中本次有效数据的长度。
      */
     public void onReceivePortData(byte[] buffer, int len){
+        if(buffer==null){
+            return;
+        }
+        if(mSerialPort==null||mInputStream==null){
+            return;
+        }
         mAdspAckDecipher.onReceiveDate(buffer,len, mAckCallBack);
     }
 
@@ -443,6 +451,8 @@ public abstract class AdspActivity extends AppCompatActivity {
      * @param len 有效数据长度
      */
     public abstract void onGetRawData(byte[] data, int len);
+
+
 
 
 }

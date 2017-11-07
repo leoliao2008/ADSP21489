@@ -7,4 +7,5 @@
         <item>19200</item>
         <item>115200</item>
     </string-array>
+    <string name="title_activity_main2">Main2Activity</string>
 </resources>

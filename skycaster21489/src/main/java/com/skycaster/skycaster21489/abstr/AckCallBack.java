@@ -74,7 +74,7 @@ public abstract class AckCallBack {
      * @param isSuccess 表示请求是否被成功执行。
      * @param info 提示信息。
      */
-    public void inactivate(boolean isSuccess, String info) {
+    public void deactivate(boolean isSuccess, String info) {
         if(isSuccess){
             AdspRequestManager.setIsDeviceActivated(false);
             AdspRequestManager.setIsReceivingRawData(false);

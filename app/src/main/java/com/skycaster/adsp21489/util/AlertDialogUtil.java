@@ -128,7 +128,6 @@ public class AlertDialogUtil {
             public void onClick(View v) {
                 if(selectedPath!=null){
                     mAlertDialog.dismiss();
-                    Log.e(getClass().getSimpleName(),"confirm ="+selectedPath+", "+selectedBaudRate);
                     listener.onParamsSet(selectedPath,selectedBaudRate);
 
                 }else {

@@ -22,8 +22,8 @@
 
         <ImageView
             android:id="@+id/view_sd_card_files_iv_exit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/standard_icon_size"
+            android:layout_height="@dimen/standard_icon_size"
             android:src="@android:drawable/ic_delete"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
@@ -50,19 +50,21 @@
         <Button
             android:id="@+id/view_sd_card_files_btn_previous"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/dp_50"
             android:text="返回上一级"
+            android:textSize="@dimen/sp_15"
             android:textAllCaps="false"/>
 
         <TextView
             android:id="@+id/view_sd_card_files_tv_current_address"
-            android:layout_margin="5dp"
+            android:layout_margin="@dimen/dp_5"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="test"
+            android:textSize="@dimen/sp_15"
             android:gravity="center_vertical"
-            android:padding="5dp"
+            android:padding="@dimen/dp_5"
             android:maxLines="2"
             android:background="@color/color_white"/>
 

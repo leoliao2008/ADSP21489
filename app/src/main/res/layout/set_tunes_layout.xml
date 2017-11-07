@@ -33,6 +33,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:maxLines="1"
+            android:textSize="@dimen/sp_15"
             android:inputType="number"
             android:gravity="center"/>
 
@@ -52,6 +53,7 @@
             android:id="@+id/set_tunes_layout_edt_input_right_tune"
             android:layout_width="0dp"
             android:layout_weight="1"
+            android:textSize="@dimen/sp_15"
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:inputType="number"
@@ -74,7 +76,7 @@
             android:id="@+id/set_tunes_layout_btn_confirm"
             android:text="确定"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/dp_50"
             android:textSize="@dimen/text_size_config"
             android:background="@drawable/shape_navi_item"
             android:textColor="@color/selector_navi_text_color"
@@ -85,7 +87,7 @@
             android:id="@+id/set_tunes_layout_btn_cancel"
             android:text="取消"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/dp_50"
             android:background="@drawable/shape_navi_item"
             android:textSize="@dimen/text_size_config"
             android:layout_margin="1dp"

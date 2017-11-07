@@ -29,7 +29,7 @@
 
         <include
             android:layout_width="0dp"
-            app:layout_widthPercent="40%"
+            app:layout_widthPercent="25%"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             layout="@layout/layout_main_left"/>
@@ -46,7 +46,7 @@
         <LinearLayout
             android:id="@+id/main_coord_layout"
             android:layout_width="0dp"
-            app:layout_widthPercent="60%"
+            app:layout_widthPercent="75%"
             android:layout_height="match_parent"
             android:layout_gravity="end"
             android:orientation="vertical">
@@ -63,33 +63,22 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <!--<TextView-->
-                        <!--android:text="解析结果:"-->
-                        <!--style="@style/MyTextViewStyle2"/>-->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center">
-                        <TextView
-                            android:text="成功次数"
-                            style="@style/MyTextViewStyle2"/>
-                        <TextView
-                            style="@style/MyTextViewStyle2"
-                            android:text="0"/>
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center">
-                        <TextView
-                            style="@style/MyTextViewStyle2"
-                            android:text="失败次数"/>
-                        <TextView
-                            style="@style/MyTextViewStyle2"
-                            android:text="0"/>
-                    </LinearLayout>
+                    <TextView
+                        android:text="解析结果:"
+                        style="@style/MyTextViewStyle2"/>
+                    <TextView
+                        android:text="成功次数："
+                        style="@style/MyTextViewStyle2"/>
+                    <TextView
+                        style="@style/MyTextViewStyle2"
+                        android:text="0"/>
+                    <TextView
+                        style="@style/MyTextViewStyle2"
+                        android:text="失败次数："/>
+                    <TextView
+                        style="@style/MyTextViewStyle2"
+                        android:text="0"/>
+
                 </LinearLayout>
 
 
@@ -201,7 +190,7 @@
                 android:id="@+id/sub_console"
                 android:layout_height="0dp"
                 android:layout_width="match_parent"
-                android:layout_weight="2.5"
+                android:layout_weight="1.5"
                 android:background="@color/colorRiceWhite"
                 android:fastScrollEnabled="true"/>
 

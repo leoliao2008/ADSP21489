@@ -103,6 +103,8 @@ public class AdspRequestManager {
         AdspRequestManager.isReceivingRawData = isReceivingRawData;
     }
 
+    private AdspRequestManager(){}
+
     /**
      * 以单例模式获取该类的实例。
      * @param context 一个继承了AdspActivity的类。

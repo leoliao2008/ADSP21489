@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="navi_logo_height">125dp</dimen>
+    <dimen name="tool_bar_height">25dp</dimen>
+    <dimen name="margin_small">5dp</dimen>
+    <dimen name="margin_left">10dp</dimen>
+    <dimen name="margin_console_item_horizontal">2.5dp</dimen>
+    <dimen name="margin_console_item_vertical">1.25dp</dimen>
+    <dimen name="padding_button_text_medium">2.5dp</dimen>
+    <dimen name="text_size_button_medium">7.5sp</dimen>
+    <dimen name="text_size_button_large">8sp</dimen>
+    <dimen name="control_panel_button_margin">2.5dp</dimen>
+    <dimen name="text_size_config">7.5sp</dimen>
+    <dimen name="text_size_dialog_title">12.5sp</dimen>
+    <dimen name="padding_button_text_large">5dp</dimen>
+    <dimen name="text_size_title">9sp</dimen>
+    <dimen name="sd_file_item_width">25dp</dimen>
+    <dimen name="sd_file_item_height">25dp</dimen>
+    <dimen name="margin_very_small">2dp</dimen>
+    <dimen name="dp_50">30dp</dimen>
+    <dimen name="dp_5">2.5dp</dimen>
+    <dimen name="action_bar_title_text_size">11sp</dimen>
+    <dimen name="action_bar_sub_title_text_size">9sp</dimen>
+    <dimen name="sp_18">12sp</dimen>
+    <dimen name="dp_45">40dp</dimen>
+    <dimen name="sp_15">10sp</dimen>
+    <dimen name="standard_icon_size">20dp</dimen>
+</resources>

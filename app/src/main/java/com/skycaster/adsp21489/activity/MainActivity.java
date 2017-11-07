@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,6 +97,7 @@ public class MainActivity extends BaseActivity {
     };
     private LinearLayout.LayoutParams mSNRContainerLayoutParams;
     private BeidouDataPresenter mBeidouPresenter;
+    private Toolbar mToolbar;
 
 
     @NonNull
@@ -126,8 +128,8 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void inactivate(boolean isSuccess, String info) {
-                super.inactivate(isSuccess, info);
+            public void deactivate(boolean isSuccess, String info) {
+                super.deactivate(isSuccess, info);
                 updateMainConsole(info);
             }
 
@@ -366,10 +368,14 @@ public class MainActivity extends BaseActivity {
         tv_ldpcFailCount= (TextView) findViewById(R.id.tv_ldpc_fail_count);
         tv_ldpcSuccessCount= (TextView) findViewById(R.id.tv_ldpc_success_count);
         mSNRContainer= (FrameLayout) findViewById(R.id.snr_view_container);
+        mToolbar= (Toolbar) findViewById(R.id.toolbar);
     }
 
     @Override
     protected void initData() {
+        setSupportActionBar(mToolbar);
+        mToolbar.setTitleTextAppearance(this,R.style.ActionBarTitleTextAppearance);
+        mToolbar.setSubtitleTextAppearance(this,R.style.ActionBarSubTitleTextAppearance);
         mActionBar = getSupportActionBar();
         if(mActionBar!=null){
             mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -863,6 +869,12 @@ public class MainActivity extends BaseActivity {
             mHandler.post(mRunnable_requestSnr);
             toggleSNRContainer(true);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mBeidouPresenter.onStart();
     }
 
     @Override
