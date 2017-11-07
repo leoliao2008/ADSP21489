@@ -3,8 +3,6 @@ package com.skycaster.adsp21489.activity;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -379,12 +377,13 @@ public class MainActivity extends BaseActivity {
         mActionBar = getSupportActionBar();
         if(mActionBar!=null){
             mActionBar.setDisplayHomeAsUpEnabled(true);
-            try {
-                PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_CONFIGURATIONS);
-                mActionBar.setSubtitle("当前版本："+packageInfo.versionName);
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
+            mActionBar.setTitle("");
+//            try {
+//                PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_CONFIGURATIONS);
+//                mActionBar.setSubtitle("当前版本："+packageInfo.versionName);
+//            } catch (PackageManager.NameNotFoundException e) {
+//                e.printStackTrace();
+//            }
         }
 
         mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);

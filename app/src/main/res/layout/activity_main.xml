@@ -75,6 +75,7 @@
                             android:text="成功次数"
                             style="@style/MyTextViewStyle2"/>
                         <TextView
+                            android:id="@+id/tv_ldpc_success_count"
                             style="@style/MyTextViewStyle2"
                             android:text="0"/>
                     </LinearLayout>
@@ -87,6 +88,7 @@
                             style="@style/MyTextViewStyle2"
                             android:text="失败次数"/>
                         <TextView
+                            android:id="@+id/tv_ldpc_fail_count"
                             style="@style/MyTextViewStyle2"
                             android:text="0"/>
                     </LinearLayout>

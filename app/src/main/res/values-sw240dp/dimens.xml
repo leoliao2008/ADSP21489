@@ -17,7 +17,7 @@
     <dimen name="sd_file_item_width">25dp</dimen>
     <dimen name="sd_file_item_height">25dp</dimen>
     <dimen name="margin_very_small">2dp</dimen>
-    <dimen name="dp_50">30dp</dimen>
+    <dimen name="dp_50">35dp</dimen>
     <dimen name="dp_5">2.5dp</dimen>
     <dimen name="action_bar_title_text_size">11sp</dimen>
     <dimen name="action_bar_sub_title_text_size">9sp</dimen>
