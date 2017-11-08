@@ -276,8 +276,9 @@ public abstract class AdspActivity extends AppCompatActivity {
                                 onReceivePortData(mAckContainer.clone(),len);
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         showHint(e.toString());
+                        break;
                     }
                 }
             }

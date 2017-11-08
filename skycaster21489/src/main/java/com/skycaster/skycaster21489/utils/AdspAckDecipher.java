@@ -31,8 +31,9 @@ public class AdspAckDecipher {
             if(AdspRequestManager.isDeviceActivated()&& AdspRequestManager.isReceivingRawData()){
                 mActivity.onGetRawData(buffer,len);
             }
-        }catch (NullPointerException e){
+        }catch (Exception e){
             mActivity.showHint(e.getMessage());
+            return;
         }
 
         for(int i=0;i<len;i++){
