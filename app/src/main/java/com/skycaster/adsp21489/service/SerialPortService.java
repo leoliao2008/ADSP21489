@@ -41,8 +41,8 @@ public class SerialPortService extends Service {
                 if (isReceivingData.compareAndSet(false, true)) {
                     //变成前台服务
                     startForeground(StaticData.START_SERIAL_PORT_SERVICE,new Notification());
-                    String path = intent.getStringExtra(StaticData.EXTRA_STRING_SERIAL_PORT_PATH);
-                    int baudRate= intent.getIntExtra(StaticData.EXTRA_INT_SERIAL_PORT_BAUD_RATE,115200);
+                    String path = intent.getStringExtra(StaticData.EXTRA_STRING_CD_RADIO_SP_PATH);
+                    int baudRate= intent.getIntExtra(StaticData.EXTRA_INT_CD_RADIO_SP_BAUD_RATE,115200);
                     SerialPort serialPort=null;
                     //打开串口
                     try {

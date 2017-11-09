@@ -48,8 +48,8 @@ public class BeidouDataPresenter {
                 super.onStartReceivingData();
                 //把设置保存到本地
                 SharedPreferences.Editor editor=mSharedPreferences.edit();
-                editor.putString(StaticData.BEIDOU_SP_PATH,mPath);
-                editor.putInt(StaticData.BEIDOU_SP_BAUD_RATE,mBaudRate);
+                editor.putString(StaticData.EXTRA_STRING_BEIDOU_SP_PATH,mPath);
+                editor.putInt(StaticData.EXTRA_INT_BEIDOU_SP_BAUD_RATE,mBaudRate);
                 editor.apply();
                 mActivity.updateMainConsole("北斗串口监听启动了。");
 
@@ -72,7 +72,7 @@ public class BeidouDataPresenter {
             public void onParamsSet(String path, int baudRate) {
                 mPath=path;
                 mBaudRate=baudRate;
-                mSerialPortModel.startReceivingData(
+                mSerialPortModel.startReceivingBeidouData(
                         mActivity,
                         mPath,
                         mBaudRate,
@@ -83,8 +83,8 @@ public class BeidouDataPresenter {
     }
 
     private void startListeningToBeidouSp(){
-        final String defaultPath = mSharedPreferences.getString(StaticData.BEIDOU_SP_PATH, null);
-        final int defaultBaudRate=mSharedPreferences.getInt(StaticData.BEIDOU_SP_BAUD_RATE,0);
+        final String defaultPath = mSharedPreferences.getString(StaticData.EXTRA_STRING_BEIDOU_SP_PATH, null);
+        final int defaultBaudRate=mSharedPreferences.getInt(StaticData.EXTRA_INT_BEIDOU_SP_BAUD_RATE,0);
         AlertDialogUtil.showSerialPortSelection(
                 mActivity,
                 "设置北斗模块串口",
@@ -95,7 +95,7 @@ public class BeidouDataPresenter {
     }
 
     private void stopListeningToBeidouSp(){
-        mSerialPortModel.stopReceivingData(mActivity);
+        mSerialPortModel.stopReceivingBeidouData(mActivity);
     }
 
     public void onCreateOptionsMenu(Menu menu){
@@ -166,9 +166,9 @@ public class BeidouDataPresenter {
         if(isReceivingBeidouData){
             mActivity.supportInvalidateOptionsMenu();
 
-            mPath= mActivity.getIntent().getStringExtra(StaticData.EXTRA_STRING_SERIAL_PORT_PATH);
-            mBaudRate=mActivity.getIntent().getIntExtra(StaticData.EXTRA_INT_SERIAL_PORT_BAUD_RATE,115200);
-            mSerialPortModel.startReceivingData(
+            mPath= mActivity.getIntent().getStringExtra(StaticData.EXTRA_STRING_CD_RADIO_SP_PATH);
+            mBaudRate=mActivity.getIntent().getIntExtra(StaticData.EXTRA_INT_CD_RADIO_SP_BAUD_RATE,115200);
+            mSerialPortModel.startReceivingBeidouData(
                     mActivity,
                     mPath,
                     mBaudRate,
@@ -180,8 +180,8 @@ public class BeidouDataPresenter {
     public void onStop(){
         if(isReceivingBeidouData){
             mActivity.getIntent().putExtra(StaticData.EXTRA_BOOLEAN_IS_RECEIVING_BEIDOU_DATA,isReceivingBeidouData);
-            mActivity.getIntent().putExtra(StaticData.EXTRA_STRING_SERIAL_PORT_PATH,mPath);
-            mActivity.getIntent().putExtra(StaticData.EXTRA_INT_SERIAL_PORT_BAUD_RATE,mBaudRate);
+            mActivity.getIntent().putExtra(StaticData.EXTRA_STRING_CD_RADIO_SP_PATH,mPath);
+            mActivity.getIntent().putExtra(StaticData.EXTRA_INT_CD_RADIO_SP_BAUD_RATE,mBaudRate);
             stopListeningToBeidouSp();
         }
     }

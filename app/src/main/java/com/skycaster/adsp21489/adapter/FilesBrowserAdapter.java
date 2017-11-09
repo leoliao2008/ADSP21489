@@ -30,7 +30,7 @@ public class FilesBrowserAdapter extends RecyclerView.Adapter<FilesBrowserViewHo
 
     @Override
     public FilesBrowserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView= LayoutInflater.from(mContext).inflate(R.layout.sd_file_item,null);
+        View itemView= LayoutInflater.from(mContext).inflate(R.layout.item_local_file,null);
         return new FilesBrowserViewHolder(itemView);
     }
 

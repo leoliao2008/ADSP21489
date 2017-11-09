@@ -2,6 +2,8 @@ package com.skycaster.adsp21489.util;
 
 import android.widget.Toast;
 
+import com.skycaster.adsp21489.base.BaseApplication;
+
 import static com.skycaster.adsp21489.base.BaseApplication.getGlobalContext;
 
 
@@ -11,13 +13,18 @@ import static com.skycaster.adsp21489.base.BaseApplication.getGlobalContext;
 
 public class ToastUtil {
     private static Toast mToast;
-    public static synchronized void showToast(String msg){
-        if(mToast==null){
-            mToast=Toast.makeText(getGlobalContext(),msg,Toast.LENGTH_SHORT);
-        }else {
-            mToast.setText(msg);
-        }
-        LogUtils.addToLogHistory(msg);
-        mToast.show();
+    public static synchronized void showToast(final String msg){
+        BaseApplication.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mToast==null){
+                    mToast=Toast.makeText(getGlobalContext(),msg,Toast.LENGTH_SHORT);
+                }else {
+                    mToast.setText(msg);
+                }
+                LogUtils.addToLogHistory(msg);
+                mToast.show();
+            }
+        });
     }
 }

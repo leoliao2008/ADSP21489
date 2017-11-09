@@ -1,5 +1,6 @@
 package project.SerialPort;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -52,14 +53,15 @@ public class SerialPort {
                 if ((su.waitFor() != 0) || !device.canRead()
                         || !device.canWrite()) {
                     Log.e(TAG,"(su.waitFor() != 0) || !device.canRead()|| !device.canWrite()");
-                    throw new SecurityException();
+                    throw new SecurityException("(su.waitFor() != 0) || !device.canRead()|| !device.canWrite()");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                if(e.getMessage()!=null){
-                    Log.e(TAG,e.getMessage());
+                String msg = e.getMessage();
+                if(TextUtils.isEmpty(msg)){
+                   msg="Unknown Error";
                 }
-                throw new SecurityException(e.getMessage());
+                Log.e(TAG, msg);
+                throw new SecurityException(msg);
             }
         }
 

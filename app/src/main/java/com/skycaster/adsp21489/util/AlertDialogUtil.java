@@ -10,7 +10,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -198,7 +197,7 @@ public class AlertDialogUtil {
 
     public static void showSetFreqDialog(final AdspActivity context) {
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
-        LinearLayout rootView= (LinearLayout) View.inflate(context,R.layout.set_freq_layout,null);
+        LinearLayout rootView= (LinearLayout) View.inflate(context,R.layout.alert_dialog_set_freq_layout,null);
         final EditText edt_inputFreq= (EditText) rootView.findViewById(R.id.set_freq_layout_edt_input_frequency);
         edt_inputFreq.setText(String.valueOf(context.getFreq()));
         edt_inputFreq.setSelection(edt_inputFreq.getText().toString().trim().length());
@@ -232,7 +231,7 @@ public class AlertDialogUtil {
 
     public static void showSetTunesDialog(final AdspActivity context) {
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
-        LinearLayout rootView= (LinearLayout) View.inflate(context,R.layout.set_tunes_layout,null);
+        LinearLayout rootView= (LinearLayout) View.inflate(context,R.layout.alert_dialog_set_tunes_layout,null);
         final EditText edt_inputLeftTune= (EditText) rootView.findViewById(R.id.set_tunes_layout_edt_input_left_tune);
         edt_inputLeftTune.setText(String.valueOf(context.getLeftTune()));
         edt_inputLeftTune.setSelection(edt_inputLeftTune.getText().toString().trim().length());
@@ -270,7 +269,7 @@ public class AlertDialogUtil {
 
     public static void showSdCardBrowsingView(final Context context, final UpgradeFileSelectedListener listener){
         //init views
-        View rootView= LayoutInflater.from(context).inflate(R.layout.view_sd_card_files_layout,null);
+        View rootView= LayoutInflater.from(context).inflate(R.layout.activity_local_file_browser,null);
         final RecyclerView recyclerView= (RecyclerView) rootView.findViewById(R.id.view_sd_card_files_recycler_view);
         final TextView tv_currentDir= (TextView) rootView.findViewById(R.id.view_sd_card_files_tv_current_address);
         Button btn_pre= (Button) rootView.findViewById(R.id.view_sd_card_files_btn_previous);
@@ -325,7 +324,7 @@ public class AlertDialogUtil {
 
     public static void showServiceOptionsBySpinner(final AdspActivity context) {
         //init view
-        View rootView=LayoutInflater.from(context).inflate(R.layout.choose_available_service_by_spinner,null);
+        View rootView=LayoutInflater.from(context).inflate(R.layout.alert_dialog_choose_available_service_by_spinner,null);
         AppCompatSpinner spinner= (AppCompatSpinner) rootView.findViewById(R.id.start_service_layout_spin_options);
         Button btn_confirm= (Button) rootView.findViewById(R.id.start_service_layout_btn_confirm);
         Button btn_cancel= (Button) rootView.findViewById(R.id.start_service_layout_btn_cancel);
@@ -372,7 +371,7 @@ public class AlertDialogUtil {
     }
 
     public static void showServiceOptionsByEditText(Context context, final OnServiceCodeInputListener listener){
-        View rootView=View.inflate(context,R.layout.choose_available_service_by_edit_text,null);
+        View rootView=View.inflate(context,R.layout.alert_dialog_choose_available_service_by_edit_text,null);
         final EditText edt_input= (EditText) rootView.findViewById(R.id.choose_service_edt_service_code);
         Button btn_confirm= (Button) rootView.findViewById(R.id.choose_service_btn_confirm);
         Button btn_cancel= (Button) rootView.findViewById(R.id.choose_service_btn_cancel);
@@ -409,7 +408,7 @@ public class AlertDialogUtil {
 
     public static void showSetDeviceIdDialog(Context context, final SetDeviceIdListener listener){
         //init view
-        View rootView=LayoutInflater.from(context).inflate(R.layout.set_device_id_layout,null);
+        View rootView=LayoutInflater.from(context).inflate(R.layout.alert_dialog_set_device_id_layout,null);
         final EditText edt_inputId= (EditText) rootView.findViewById(R.id.set_device_id_layout_edt_input_id);
         Button btn_confirm= (Button) rootView.findViewById(R.id.set_device_id_layout_btn_confirm);
         Button btn_cancel= (Button) rootView.findViewById(R.id.set_device_id_layout_btn_cancel);
@@ -446,7 +445,7 @@ public class AlertDialogUtil {
 
     public static void showSetResetCountDialog(Context context, final ResetCountInputListener listener){
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
-        View rootView=View.inflate(context,R.layout.set_reset_count_layout,null);
+        View rootView=View.inflate(context,R.layout.alert_dialog_set_reset_count_layout,null);
         final EditText edt_count= (EditText) rootView.findViewById(R.id.set_reset_count_layout_edt_input_count);
         Button btn_confirm= (Button) rootView.findViewById(R.id.set_reset_count_layout_btn_confirm);
         Button btn_cancel= (Button) rootView.findViewById(R.id.set_reset_count_layout_btn_cancel);

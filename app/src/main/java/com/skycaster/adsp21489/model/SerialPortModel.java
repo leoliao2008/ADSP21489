@@ -54,16 +54,16 @@ public class SerialPortModel {
     }
 
     /**
-     * 启动一个前台服务，监听特定串口返回的数据
+     * 启动一个前台服务，该服务会监听北斗模块通过串口返回的数据，并把数据广播出去
      * @param context
      * @param path
      * @param baudRate
      * @param callBack
      */
-    public void startReceivingData(Context context, String path, int baudRate, final SerialPortModelCallBack callBack){
+    public void startReceivingBeidouData(Context context, String path, int baudRate, final SerialPortModelCallBack callBack){
         Intent intent=new Intent(context,SerialPortService.class);
-        intent.putExtra(StaticData.EXTRA_STRING_SERIAL_PORT_PATH,path);
-        intent.putExtra(StaticData.EXTRA_INT_SERIAL_PORT_BAUD_RATE,baudRate);
+        intent.putExtra(StaticData.EXTRA_STRING_CD_RADIO_SP_PATH,path);
+        intent.putExtra(StaticData.EXTRA_INT_CD_RADIO_SP_BAUD_RATE,baudRate);
         mServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -80,10 +80,10 @@ public class SerialPortModel {
     }
 
     /**
-     * 停止监听串口数据，退出前台服务。
+     * 停止监听北斗模块串口的前台服务，停止串口数据的广播。
      * @param context
      */
-    public void stopReceivingData(Context context){
+    public void stopReceivingBeidouData(Context context){
         if(mServiceConnection!=null){
             context.unbindService(mServiceConnection);
         }
