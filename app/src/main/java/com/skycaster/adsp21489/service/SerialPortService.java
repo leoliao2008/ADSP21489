@@ -47,9 +47,7 @@ public class SerialPortService extends Service {
                     //打开串口
                     try {
                         serialPort=new SerialPort(new File(path),baudRate,0);
-                    } catch (SecurityException e) {
-                        handlePortException(e);
-                    } catch (IOException e){
+                    } catch (Exception e) {
                         handlePortException(e);
                     }
                     if(serialPort!=null){

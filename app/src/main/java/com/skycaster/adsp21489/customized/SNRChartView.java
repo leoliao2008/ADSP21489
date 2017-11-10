@@ -64,7 +64,7 @@ public class SNRChartView extends View {
         mPaintGrey.setColor(Color.GRAY);
         mTextPaint=new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setColor(Color.WHITE);
-        mTextPaint.setTextSize(12);
+        mTextPaint.setTextSize(10);
         mTextBounds =new Rect();
 
         //滑动冲突解决方案

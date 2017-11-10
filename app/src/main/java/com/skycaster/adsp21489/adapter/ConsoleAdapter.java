@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.skycaster.adsp21489.R;
 import com.skycaster.adsp21489.bean.ConsoleItem;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class ConsoleAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if(convertView==null){
-            convertView=LayoutInflater.from(mContext).inflate(android.R.layout.simple_list_item_1,null);
+            convertView=LayoutInflater.from(mContext).inflate(R.layout.item_console,null);
         }
         ConsoleItem item = list.get(position);
         StringBuffer sb=new StringBuffer();

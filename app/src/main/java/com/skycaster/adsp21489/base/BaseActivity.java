@@ -66,6 +66,7 @@ public abstract class BaseActivity extends AdspActivity {
 
     protected void onClick(int id, View.OnClickListener listener){
         findViewById(id).setOnClickListener(listener);
+
     }
 
     /**

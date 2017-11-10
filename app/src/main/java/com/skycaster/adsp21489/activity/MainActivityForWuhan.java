@@ -14,12 +14,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -95,16 +93,17 @@ public class MainActivityForWuhan extends BaseActivity {
     private Runnable mRunnable_checkLDPC =new Runnable() {
         @Override
         public void run() {
-            if(!isContinueCheckLDPC.get()){
-                return;
-            }
-            mRequestManager.checkLDPC();
-            if(!isContinueCheckLDPC.get()){
+            if(!isPortOpen){
+                showToast("串口没有打开，请先打开串口。");
                 return;
             }
             if(mIsCdRadioCutOffFromCPU){
                 return;
             }
+            if(!isContinueCheckLDPC.get()){
+                return;
+            }
+            mRequestManager.checkLDPC();
             mHandler.postDelayed(this,1500);
         }
     };
@@ -112,9 +111,9 @@ public class MainActivityForWuhan extends BaseActivity {
     private BeidouDataPresenterForWuhan mBeidouPresenter;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
-    private int mMainConsoleTextSize;
     private GPIOModel mGPIOModel;
     private boolean mIsCdRadioCutOffFromCPU;
+    private ActionBarDrawerToggle mToggle;
 
 
     @NonNull
@@ -418,10 +417,11 @@ public class MainActivityForWuhan extends BaseActivity {
                 e.printStackTrace();
             }
         }
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        mToggle = new ActionBarDrawerToggle(
                 this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.setDrawerListener(toggle);
-        toggle.syncState();
+        mDrawerLayout.setDrawerListener(mToggle);
+        mToggle.syncState();
+
 
         mSharedPreferences = getSharedPreferences("Config", Context.MODE_PRIVATE);
 
@@ -431,29 +431,11 @@ public class MainActivityForWuhan extends BaseActivity {
         mSNRContainerLayoutParams = (LinearLayout.LayoutParams) mSNRContainer.getLayoutParams();
 
 
-        DisplayMetrics displayMetrics=new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        mMainConsoleTextSize = (int) (getResources().getDimensionPixelSize(R.dimen.sp_18)/displayMetrics.scaledDensity);
         //初始化main console
-        mMainConsoleAdapter=new ConsoleAdapter(mMainConsoleContents,this){
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TextView textView = (TextView) super.getView(position, convertView, parent);
-                textView.setGravity(Gravity.CENTER);
-                textView.setTextSize(mMainConsoleTextSize);
-                return textView;
-            }
-        };
+        mMainConsoleAdapter=new ConsoleAdapter(mMainConsoleContents,this);
         mMainConsole.setAdapter(mMainConsoleAdapter);
         //初始化sub console
-        mSubConsoleAdapter=new ConsoleAdapter(mSubConsoleContents,this){
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TextView textView= (TextView) super.getView(position, convertView, parent);
-                textView.setTextSize(10);
-                return textView;
-            }
-        };
+        mSubConsoleAdapter=new ConsoleAdapter(mSubConsoleContents,this);
         mSubConsole.setAdapter(mSubConsoleAdapter);
 
         mRequestManager = getRequestManager();
@@ -540,6 +522,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkConnectionStatus();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //休眠
@@ -551,6 +534,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.hibernate();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //接收机开
@@ -562,6 +546,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.activate(true);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //接收机关
@@ -584,6 +569,7 @@ public class MainActivityForWuhan extends BaseActivity {
                 }else {
                     mRequestManager.activate(false);
                 }
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询软件版本
@@ -595,6 +581,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkSoftwareVersion();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询产品id
@@ -617,6 +604,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkSnrRate();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询系统状态
@@ -628,6 +616,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkSnrStatus();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询时偏
@@ -639,6 +628,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkSfo();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询频偏
@@ -650,6 +640,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkCfo();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询tuner状态
@@ -661,6 +652,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkTunerStatus();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //接收到有哪些业务
@@ -672,6 +664,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkTaskList();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //查询日期
@@ -694,6 +687,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.toggleCKFO(true);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //设置校验失败后不输出
@@ -705,6 +699,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.toggleCKFO(false);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //设置波特率
@@ -716,6 +711,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 AlertDialogUtil.showSetBaudRateDialog(MainActivityForWuhan.this);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //设置频率
@@ -727,6 +723,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 AlertDialogUtil.showSetFreqDialog(MainActivityForWuhan.this);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //设置接收模式
@@ -738,6 +735,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 AlertDialogUtil.showSetTunesDialog(MainActivityForWuhan.this);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //启动1pps
@@ -749,6 +747,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.toggle1Pps(true);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //关闭1pps
@@ -760,6 +759,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.toggle1Pps(false);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -777,6 +777,7 @@ public class MainActivityForWuhan extends BaseActivity {
                         mRequestManager.prepareUpgrade(MainActivityForWuhan.this,upgradeFile);
                     }
                 });
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -791,6 +792,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkCkfoSetting();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -803,6 +805,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkFreq();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -815,6 +818,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkTunes();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -827,6 +831,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.check1PpsConfig();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -840,6 +845,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkIfActivated();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -863,6 +869,7 @@ public class MainActivityForWuhan extends BaseActivity {
                         }
                     }
                 });
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //启动特定服务。
@@ -881,6 +888,7 @@ public class MainActivityForWuhan extends BaseActivity {
                         mRequestManager.startService(code);
                     }
                 });
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -894,6 +902,7 @@ public class MainActivityForWuhan extends BaseActivity {
                     return;
                 }
                 mRequestManager.checkResetCount();
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -916,6 +925,7 @@ public class MainActivityForWuhan extends BaseActivity {
 
                     }
                 });
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
         //***********************************9月5日新增命令***************************
@@ -938,6 +948,7 @@ public class MainActivityForWuhan extends BaseActivity {
                         mRunnable_checkLDPC.run();
                     }
                 },1500);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -950,6 +961,7 @@ public class MainActivityForWuhan extends BaseActivity {
                 }
                 isContinueCheckLDPC.set(false);
                 mHandler.removeCallbacks(mRunnable_checkLDPC);
+                mDrawerLayout.closeDrawer(Gravity.START);
             }
         });
 
@@ -1079,9 +1091,9 @@ public class MainActivityForWuhan extends BaseActivity {
         getMenuInflater().inflate(R.menu.wu_han_main_menu,menu);
         MenuItem itemDisplayChartView = menu.findItem(R.id.menu_display_snr_chart_view);
         if(isDisplaySnr.get()){
-            itemDisplayChartView.setIcon(R.drawable.ic_tonality_white_48dp);
+            itemDisplayChartView.setIcon(R.drawable.icon_chart_white_18dp);
         }else {
-            itemDisplayChartView.setIcon(R.drawable.ic_tonality_grey600_48dp);
+            itemDisplayChartView.setIcon(R.drawable.icon_chart_grey_18dp);
         }
         mBeidouPresenter.onCreateOptionsMenu(menu);
         return true;

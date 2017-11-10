@@ -8,9 +8,7 @@ import android.view.MenuItem;
 import com.skycaster.adsp21489.activity.MainActivityForWuhan;
 import com.skycaster.adsp21489.callbacks.SerialPortModelCallBack;
 import com.skycaster.adsp21489.data.StaticData;
-import com.skycaster.adsp21489.model.GPIOModel;
 import com.skycaster.adsp21489.model.SerialPortModel;
-import com.skycaster.adsp21489.util.AlertDialogUtil;
 
 /**
  * Created by 廖华凯 on 2017/10/18.
@@ -20,17 +18,17 @@ public class BeidouDataPresenterForWuhan {
     private MainActivityForWuhan mActivity;
     private SerialPortModel mSerialPortModel;
     private SharedPreferences mSharedPreferences;
-    private boolean isReceivingBeidouData;
-    private AlertDialogUtil.SerialPortParamsListener mPortParamsListener;
+//    private boolean isReceivingBeidouData;
+//    private AlertDialogUtil.SerialPortParamsListener mPortParamsListener;
     private SerialPortModelCallBack mSerialPortModelCallBack;
-    private String mPath;
-    private int mBaudRate;
-    private GPIOModel mGPIOModel;
+//    private String mPath;
+//    private int mBaudRate;
+//    private GPIOModel mGPIOModel;
 
     public BeidouDataPresenterForWuhan(MainActivityForWuhan activity) {
         mActivity = activity;
         mSerialPortModel=new SerialPortModel();
-        mGPIOModel=new GPIOModel();
+//        mGPIOModel=new GPIOModel();
         mSharedPreferences=mActivity.getMySharedPreferences();
 
         mSerialPortModelCallBack=new SerialPortModelCallBack(){
@@ -44,10 +42,10 @@ public class BeidouDataPresenterForWuhan {
             public void onStartReceivingData() {
                 super.onStartReceivingData();
                 //把设置保存到本地
-                SharedPreferences.Editor editor=mSharedPreferences.edit();
-                editor.putString(StaticData.EXTRA_STRING_BEIDOU_SP_PATH,mPath);
-                editor.putInt(StaticData.EXTRA_INT_BEIDOU_SP_BAUD_RATE,mBaudRate);
-                editor.apply();
+//                SharedPreferences.Editor editor=mSharedPreferences.edit();
+//                editor.putString(StaticData.EXTRA_STRING_BEIDOU_SP_PATH,mPath);
+//                editor.putInt(StaticData.EXTRA_INT_BEIDOU_SP_BAUD_RATE,mBaudRate);
+//                editor.apply();
                 mActivity.updateMainConsole("北斗串口监听启动了。");
 
             }
@@ -64,19 +62,19 @@ public class BeidouDataPresenterForWuhan {
                 mActivity.updateMainConsole("北斗串口监听停止了。");
             }
         };
-        mPortParamsListener=new AlertDialogUtil.SerialPortParamsListener() {
-            @Override
-            public void onParamsSet(String path, int baudRate) {
-                mPath=path;
-                mBaudRate=baudRate;
-                mSerialPortModel.startReceivingBeidouData(
-                        mActivity,
-                        mPath,
-                        mBaudRate,
-                        mSerialPortModelCallBack
-                );
-            }
-        };
+//        mPortParamsListener=new AlertDialogUtil.SerialPortParamsListener() {
+//            @Override
+//            public void onParamsSet(String path, int baudRate) {
+//                mPath=path;
+//                mBaudRate=baudRate;
+//                mSerialPortModel.startReceivingBeidouData(
+//                        mActivity,
+//                        mPath,
+//                        mBaudRate,
+//                        mSerialPortModelCallBack
+//                );
+//            }
+//        };
     }
 
 
