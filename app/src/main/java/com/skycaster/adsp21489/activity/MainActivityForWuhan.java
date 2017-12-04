@@ -114,6 +114,7 @@ public class MainActivityForWuhan extends BaseActivity {
     private GPIOModel mGPIOModel;
     private boolean mIsCdRadioCutOffFromCPU;
     private ActionBarDrawerToggle mToggle;
+    private boolean mIsBeidouSpOpen;
 
 
     @NonNull
@@ -314,19 +315,19 @@ public class MainActivityForWuhan extends BaseActivity {
                     case RAW_DATA:
                         sb.append("裸数据传输。");
                         //在成功启动裸数据传输的前提下，把CDRadio模块和北斗模块的串口连接起来。
-                        if(isSuccess){
-                            BaseApplication.postDelay(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        mGPIOModel.connectCDRadioToBeidou();
-                                        mIsCdRadioCutOffFromCPU = true;
-                                    } catch (IOException e) {
-                                        handleException(e);
-                                    }
-                                }
-                            },1000);
-                        }
+//                        if(isSuccess){
+//                            BaseApplication.postDelay(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    try {
+//                                        mGPIOModel.connectCDRadioToBeidou();
+//                                        mIsCdRadioCutOffFromCPU = true;
+//                                    } catch (IOException e) {
+//                                        handleException(e);
+//                                    }
+//                                }
+//                            },1000);
+//                        }
                         break;
                     case ALL:
                         sb.append("全部。");
@@ -448,6 +449,17 @@ public class MainActivityForWuhan extends BaseActivity {
         } catch (IOException e) {
             handleException(e);
         }
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mGPIOModel.connectCdRadioToCPU();
+                } catch (IOException e) {
+                    handleException(e);
+                }
+            }
+        },1000);
+
     }
 
     private void handleException(Exception e) {
@@ -979,17 +991,12 @@ public class MainActivityForWuhan extends BaseActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mBeidouPresenter.onStart();
-    }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mBeidouPresenter.onStop();
         if(isFinishing()){
+            mBeidouPresenter.closeBeidouSp();
             clearAllRequest();
             try {
                 mGPIOModel.turnOffCdRadio();
@@ -1095,6 +1102,12 @@ public class MainActivityForWuhan extends BaseActivity {
         }else {
             itemDisplayChartView.setIcon(R.drawable.icon_chart_grey_18dp);
         }
+        MenuItem itemIsBeidouSpOpen = menu.findItem(R.id.menu_open_beidou_sp);
+        if(mIsBeidouSpOpen){
+            itemIsBeidouSpOpen.setTitle("停止监听北斗串口");
+        }else {
+            itemIsBeidouSpOpen.setTitle("开始监听北斗串口");
+        }
         mBeidouPresenter.onCreateOptionsMenu(menu);
         return true;
     }
@@ -1115,6 +1128,18 @@ public class MainActivityForWuhan extends BaseActivity {
                 isDisplaySnr.set(!isDisplaySnr.get());
                 mSharedPreferences.edit().putBoolean(IS_DISPLAY_SNR,isDisplaySnr.get()).apply();
                 supportInvalidateOptionsMenu();
+                break;
+            case R.id.menu_open_beidou_sp:
+                mIsBeidouSpOpen=!mIsBeidouSpOpen;
+                supportInvalidateOptionsMenu();
+                if(mIsBeidouSpOpen){
+                    mBeidouPresenter.openBeidouSp();
+                }else {
+                    mBeidouPresenter.closeBeidouSp();
+                }
+                break;
+            case R.id.menu_exit:
+                onBackPressed();
                 break;
             default:
                 break;

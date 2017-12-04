@@ -27,16 +27,6 @@
 
         <service android:name=".service.SerialPortService"/>
 
-        <activity
-            android:name=".activity.Main2Activity"
-            android:label="@string/title_activity_main2"
-            android:theme="@style/MyTheme">
-        </activity>
-        <activity
-            android:name=".activity.TestActivity"
-            android:label="@string/title_activity_test"
-            android:theme="@style/MyTheme">
-        </activity>
     </application>
 
 </manifest>

@@ -28,7 +28,6 @@ public class BeidouDataPresenterForWuhan {
     public BeidouDataPresenterForWuhan(MainActivityForWuhan activity) {
         mActivity = activity;
         mSerialPortModel=new SerialPortModel();
-//        mGPIOModel=new GPIOModel();
         mSharedPreferences=mActivity.getMySharedPreferences();
 
         mSerialPortModelCallBack=new SerialPortModelCallBack(){
@@ -136,7 +135,7 @@ public class BeidouDataPresenterForWuhan {
         mActivity.showHint(message);
     }
 
-    public void onStart(){
+    public void openBeidouSp(){
         mSerialPortModel.startReceivingBeidouData(
                 mActivity,
                 StaticData.BEI_DOU_SP_PATH,
@@ -145,7 +144,7 @@ public class BeidouDataPresenterForWuhan {
         );
     }
 
-    public void onStop(){
+    public void closeBeidouSp(){
         mSerialPortModel.stopReceivingBeidouData(mActivity);
     }
 }

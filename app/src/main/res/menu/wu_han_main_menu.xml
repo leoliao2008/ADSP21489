@@ -7,5 +7,13 @@
           android:title="展示音噪率"
           app:showAsAction="always"/>
 
+    <item android:id="@+id/menu_open_beidou_sp"
+          android:icon="@android:drawable/ic_secure"
+          android:title="启动监听北斗串口"
+          app:showAsAction="never"/>
+    <item android:id="@+id/menu_exit"
+          android:icon="@drawable/backward"
+          android:title="退出程序"
+          app:showAsAction="never"/>
 
 </menu>

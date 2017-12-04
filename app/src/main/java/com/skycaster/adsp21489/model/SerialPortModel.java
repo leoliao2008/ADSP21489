@@ -86,6 +86,7 @@ public class SerialPortModel {
     public void stopReceivingBeidouData(Context context){
         if(mServiceConnection!=null){
             context.unbindService(mServiceConnection);
+            mServiceConnection=null;
         }
     }
 
